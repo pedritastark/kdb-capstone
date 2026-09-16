@@ -3,7 +3,6 @@ import { NavLink } from "react-router-dom";
 import {
   FiClipboard,
   FiBook,
-  FiPackage,
   FiUsers,
   FiCreditCard,
   FiBell,
@@ -21,7 +20,6 @@ interface ItemNav {
 const items: ItemNav[] = [
   { to: "/pedidos", label: "Pedidos", icon: FiClipboard },
   { to: "/menu", label: "Menú", icon: FiBook },
-  { to: "/inventario", label: "Inventario", icon: FiPackage },
   { to: "/clientes", label: "Clientes", icon: FiUsers },
   { to: "/pagos", label: "Pagos", icon: FiCreditCard },
   { to: "/notificaciones", label: "Notificaciones", icon: FiBell },
