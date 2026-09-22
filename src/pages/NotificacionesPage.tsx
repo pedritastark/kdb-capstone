@@ -14,11 +14,11 @@ export function NotificacionesPage() {
     <Box>
       <Flex justify="space-between" align="center" mb={5} wrap="wrap" gap={3}>
         <Flex align="center" gap={3}>
-          <Text fontSize="xl" fontWeight="800">
-            Notificaciones
+          <Text fontFamily="heading" letterSpacing="wide" fontSize="2xl" color="accent.500">
+            NOTIFICACIONES
           </Text>
           {noLeidas > 0 && (
-            <Badge bg="danger.500" color="white" borderRadius="full" px={2}>
+            <Badge bg="accent.500" color="black" fontWeight="800" borderRadius="full" px={2}>
               {noLeidas} sin leer
             </Badge>
           )}
@@ -49,7 +49,7 @@ export function NotificacionesPage() {
             gap={3}
             align="start"
           >
-            <Box w="8px" h="8px" borderRadius="full" mt="6px" flexShrink={0} bg={n.estado === "no_leida" ? "danger.500" : "transparent"} />
+            <Box w="8px" h="8px" borderRadius="full" mt="6px" flexShrink={0} bg={n.estado === "no_leida" ? "accent.500" : "transparent"} />
             <Box flex={1}>
               <Flex justify="space-between" align="center" mb={1}>
                 <Badge bg={TIPO_NOTIFICACION_COLOR[n.tipo]} color="white" fontSize="10px">

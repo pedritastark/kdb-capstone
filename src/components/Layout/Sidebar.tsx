@@ -49,8 +49,8 @@ export function Sidebar() {
     >
       <Flex align="center" justify={colapsado ? "center" : "space-between"} px={colapsado ? 0 : 4} mb={6}>
         {!colapsado && (
-          <Text fontWeight="800" fontSize="lg" color="accent.500">
-            🌮 Danny Tacos
+          <Text fontFamily="heading" letterSpacing="wide" fontSize="lg" color="accent.500">
+            🌮 DANNY TACOS
           </Text>
         )}
         <IconButton

@@ -35,34 +35,52 @@ export function Header() {
   };
 
   return (
-    <Flex
-      as="header"
-      align="center"
-      justify="space-between"
-      px={6}
-      py={3}
-      bg="bg.surface"
-      borderBottom="1px solid"
-      borderColor="border.subtle"
-      position="sticky"
-      top={0}
-      zIndex={10}
-    >
-      <Flex align="center" gap={{ base: 3, lg: 8 }} minW={0}>
-        <Box flexShrink={0}>
-          <Text fontSize="xs" color="text.tertiary" fontWeight="600" letterSpacing="wide" display={{ base: "none", md: "block" }} whiteSpace="nowrap">
-            DANNY TACOS · COCINA
-          </Text>
-          <Text fontSize="lg" fontWeight="800" whiteSpace="nowrap">
-            Panel de Cocina
-          </Text>
-        </Box>
+    <Box position="sticky" top={0} zIndex={10}>
+      <Flex
+        as="header"
+        align="center"
+        justify="space-between"
+        px={6}
+        py={3}
+        bg="bg.surface"
+      >
+        <Flex align="center" gap={{ base: 3, lg: 8 }} minW={0}>
+          <Flex align="center" gap={3} flexShrink={0}>
+            <Flex
+              align="center"
+              justify="center"
+              w="38px"
+              h="38px"
+              borderRadius="full"
+              bg="accent.500"
+              color="black"
+              fontSize="20px"
+              flexShrink={0}
+            >
+              🌮
+            </Flex>
+            <Box>
+              <Text
+                fontFamily="heading"
+                fontSize="xl"
+                lineHeight="1"
+                letterSpacing="wide"
+                color="text.primary"
+                whiteSpace="nowrap"
+              >
+                DANNY TACOS
+              </Text>
+              <Text fontSize="10px" color="accent.500" fontWeight="700" letterSpacing="wider" display={{ base: "none", md: "block" }} whiteSpace="nowrap">
+                PANEL DE COCINA
+              </Text>
+            </Box>
+          </Flex>
 
-        <Flex gap={6} display={{ base: "none", lg: "flex" }}>
-          <StatItem label="Órdenes activas" valor={ordenesActivas} color="#f97316" />
-          <StatItem label="Entregas / hora" valor={entregasUltimaHora} color="#10b981" />
+          <Flex gap={6} display={{ base: "none", lg: "flex" }}>
+            <StatItem label="Órdenes activas" valor={ordenesActivas} color="#f97316" />
+            <StatItem label="Entregas / hora" valor={entregasUltimaHora} color="#10b981" />
+          </Flex>
         </Flex>
-      </Flex>
 
       <Flex align="center" gap={4}>
         <Flex align="center" gap={2} color="text.secondary" fontSize="sm">
@@ -83,10 +101,11 @@ export function Header() {
                   position="absolute"
                   top="-2px"
                   right="-2px"
-                  bg="danger.500"
-                  color="white"
+                  bg="accent.500"
+                  color="black"
                   borderRadius="full"
                   fontSize="10px"
+                  fontWeight="800"
                   minW="16px"
                   h="16px"
                   px="4px"
@@ -103,8 +122,8 @@ export function Header() {
             <Popover.Positioner>
               <Popover.Content bg="bg.surface" borderColor="border.subtle" w="360px" maxH="420px" overflowY="auto">
                 <Popover.Body p={0}>
-                  <Flex align="center" justify="space-between" px={4} py={3} borderBottom="1px solid" borderColor="border.subtle">
-                    <Text fontWeight="700">Notificaciones</Text>
+                  <Flex align="center" justify="space-between" px={4} py={3} borderBottom="1px solid" borderColor="border.subtle" bg="bg.inset">
+                    <Text fontFamily="heading" letterSpacing="wide" color="accent.500" fontSize="md">NOTIFICACIONES</Text>
                     <Text
                       fontSize="xs"
                       color="accent.500"
@@ -139,7 +158,7 @@ export function Header() {
                             <Text fontSize="xs" fontWeight="700" color="accent.500">
                               {TIPO_NOTIFICACION_LABEL[n.tipo]}
                             </Text>
-                            {n.estado === "no_leida" && <Box w="8px" h="8px" borderRadius="full" bg="danger.500" flexShrink={0} mt="2px" />}
+                            {n.estado === "no_leida" && <Box w="8px" h="8px" borderRadius="full" bg="accent.500" flexShrink={0} mt="2px" />}
                           </Flex>
                           <Text fontSize="sm" mt={1}>
                             {n.mensaje}
@@ -184,8 +203,14 @@ export function Header() {
             </Menu.Positioner>
           </Portal>
         </Menu.Root>
+        </Flex>
       </Flex>
-    </Flex>
+
+      <Box
+        h="4px"
+        bgImage="repeating-linear-gradient(-45deg, var(--chakra-colors-accent-500) 0 10px, #000 10px 20px)"
+      />
+    </Box>
   );
 }
 

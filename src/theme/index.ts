@@ -21,6 +21,10 @@ const config = defineConfig({
   },
   theme: {
     tokens: {
+      fonts: {
+        heading: { value: '"Anton", "Segoe UI", sans-serif' },
+        body: { value: '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif' },
+      },
       colors: {
         bg: {
           canvas: { value: "#0a0a0a" },
