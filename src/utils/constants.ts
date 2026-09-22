@@ -1,4 +1,4 @@
-import type { EstadoPago, EstadoPedido, MedioPago, TipoEntrega, TipoNotificacion } from "../types";
+import type { EstadoPago, EstadoPedido, MedioPago, TipoEntrega, TipoMovimientoInventario, TipoNotificacion } from "../types";
 
 export const ESTADO_PEDIDO_LABEL: Record<EstadoPedido, string> = {
   recibido: "Recibido",
@@ -52,6 +52,22 @@ export const ESTADO_PAGO_COLOR: Record<EstadoPago, string> = {
   reportado: "#f59e0b",
   confirmado: "#10b981",
   rechazado: "#ef4444",
+};
+
+export const TIPO_MOVIMIENTO_LABEL: Record<TipoMovimientoInventario, string> = {
+  entrada: "Entrada",
+  consumo: "Consumo",
+  perdida: "Pérdida",
+  ajuste: "Ajuste",
+  devolucion: "Devolución",
+};
+
+export const TIPO_MOVIMIENTO_COLOR: Record<TipoMovimientoInventario, string> = {
+  entrada: "#10b981",
+  consumo: "#2563eb",
+  perdida: "#ef4444",
+  ajuste: "#f59e0b",
+  devolucion: "#a0a0a0",
 };
 
 export const TIPO_NOTIFICACION_LABEL: Record<TipoNotificacion, string> = {

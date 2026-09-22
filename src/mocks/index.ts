@@ -3,6 +3,7 @@ export * from "./clientes";
 export * from "./categorias";
 export * from "./productos";
 export * from "./opciones";
+export * from "./ingredientes";
 export * from "./pedidos";
 export * from "./pagos";
 export * from "./notificaciones";
