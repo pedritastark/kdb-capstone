@@ -48,6 +48,16 @@ const config = defineConfig({
           600: { value: "#ea580c" },
           700: { value: "#c2410c" },
         },
+        pink: {
+          400: { value: "#f472b6" },
+          500: { value: "#e6157d" },
+          600: { value: "#be185d" },
+        },
+        sky: {
+          400: { value: "#7dd3fc" },
+          500: { value: "#38bdf8" },
+          600: { value: "#0ea5e9" },
+        },
         success: {
           400: { value: "#34d399" },
           500: { value: "#10b981" },

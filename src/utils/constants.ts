@@ -1,4 +1,4 @@
-import type { EstadoPago, EstadoPedido, MedioPago, TipoEntrega, TipoNotificacion } from "../types";
+import type { EstadoPago, EstadoPedido, MedioPago, TipoEntrega, TipoMovimientoInventario, TipoNotificacion } from "../types";
 
 export const ESTADO_PEDIDO_LABEL: Record<EstadoPedido, string> = {
   recibido: "Recibido",
@@ -54,6 +54,22 @@ export const ESTADO_PAGO_COLOR: Record<EstadoPago, string> = {
   rechazado: "#ef4444",
 };
 
+export const TIPO_MOVIMIENTO_LABEL: Record<TipoMovimientoInventario, string> = {
+  entrada: "Entrada",
+  consumo: "Consumo",
+  perdida: "Pérdida",
+  ajuste: "Ajuste",
+  devolucion: "Devolución",
+};
+
+export const TIPO_MOVIMIENTO_COLOR: Record<TipoMovimientoInventario, string> = {
+  entrada: "#10b981",
+  consumo: "#2563eb",
+  perdida: "#ef4444",
+  ajuste: "#f59e0b",
+  devolucion: "#a0a0a0",
+};
+
 export const TIPO_NOTIFICACION_LABEL: Record<TipoNotificacion, string> = {
   nuevo_pedido: "Nuevo pedido",
   pago_reportado: "Pago reportado",
@@ -71,3 +87,6 @@ export const TIPO_NOTIFICACION_COLOR: Record<TipoNotificacion, string> = {
 };
 
 export const NUEVO_PEDIDO_MINUTOS = 2;
+
+export const BRAND_GRADIENT =
+  "linear-gradient(90deg, var(--chakra-colors-pink-500), var(--chakra-colors-accent-500), var(--chakra-colors-sky-500))";

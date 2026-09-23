@@ -16,6 +16,7 @@ import { InventarioPage } from "./pages/InventarioPage";
 import { ClientesPage } from "./pages/ClientesPage";
 import { PagosPage } from "./pages/PagosPage";
 import { NotificacionesPage } from "./pages/NotificacionesPage";
+import { TomaOrdenPage } from "./pages/TomaOrdenPage";
 
 function Providers({ children }: { children: ReactNode }) {
   return (
@@ -40,6 +41,7 @@ function App() {
     <Providers>
       <Routes>
         <Route path="/login" element={<LoginPage />} />
+        <Route path="/toma-orden" element={<TomaOrdenPage />} />
         <Route
           element={
             <RutaProtegida>

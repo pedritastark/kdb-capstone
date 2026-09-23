@@ -1,4 +1,4 @@
-import type { Producto } from "../types";
+import type { Producto, ProductoIngrediente } from "../types";
 
 const fecha = "2026-01-10T08:00:00.000Z";
 
@@ -22,4 +22,62 @@ export const productos: Producto[] = [
 
   { id_producto: "p14", id_categoria: "cat5", nombre: "Guacamole Porción", descripcion: "Porción de guacamole fresco con totopos", precio: 9000, disponible: true, tiempo_preparacion_min: 4, fecha_creacion: fecha, activo: true, imagen_url: "" },
   { id_producto: "p15", id_categoria: "cat5", nombre: "Papas con Queso", descripcion: "Papas a la francesa bañadas en queso mozzarella", precio: 11000, disponible: true, tiempo_preparacion_min: 6, fecha_creacion: fecha, activo: true, imagen_url: "" },
+];
+
+export const productoIngredientes: ProductoIngrediente[] = [
+  { id_producto: "p1", id_ingrediente: "i1", cantidad_requerida: 2 },
+  { id_producto: "p1", id_ingrediente: "i3", cantidad_requerida: 0.15 },
+  { id_producto: "p1", id_ingrediente: "i10", cantidad_requerida: 0.05 },
+
+  { id_producto: "p2", id_ingrediente: "i1", cantidad_requerida: 2 },
+  { id_producto: "p2", id_ingrediente: "i4", cantidad_requerida: 0.15 },
+  { id_producto: "p2", id_ingrediente: "i10", cantidad_requerida: 0.05 },
+
+  { id_producto: "p3", id_ingrediente: "i1", cantidad_requerida: 2 },
+  { id_producto: "p3", id_ingrediente: "i5", cantidad_requerida: 0.15 },
+  { id_producto: "p3", id_ingrediente: "i16", cantidad_requerida: 0.03 },
+
+  { id_producto: "p4", id_ingrediente: "i1", cantidad_requerida: 2 },
+  { id_producto: "p4", id_ingrediente: "i5", cantidad_requerida: 0.18 },
+  { id_producto: "p4", id_ingrediente: "i12", cantidad_requerida: 0.02 },
+
+  { id_producto: "p5", id_ingrediente: "i2", cantidad_requerida: 1 },
+  { id_producto: "p5", id_ingrediente: "i3", cantidad_requerida: 0.12 },
+  { id_producto: "p5", id_ingrediente: "i6", cantidad_requerida: 0.05 },
+
+  { id_producto: "p6", id_ingrediente: "i2", cantidad_requerida: 1 },
+  { id_producto: "p6", id_ingrediente: "i3", cantidad_requerida: 0.15 },
+  { id_producto: "p6", id_ingrediente: "i6", cantidad_requerida: 0.08 },
+  { id_producto: "p6", id_ingrediente: "i9", cantidad_requerida: 0.05 },
+
+  { id_producto: "p7", id_ingrediente: "i2", cantidad_requerida: 1 },
+  { id_producto: "p7", id_ingrediente: "i6", cantidad_requerida: 0.06 },
+  { id_producto: "p7", id_ingrediente: "i9", cantidad_requerida: 0.05 },
+  { id_producto: "p7", id_ingrediente: "i18", cantidad_requerida: 0.1 },
+
+  { id_producto: "p8", id_ingrediente: "i2", cantidad_requerida: 2 },
+  { id_producto: "p8", id_ingrediente: "i3", cantidad_requerida: 0.2 },
+  { id_producto: "p8", id_ingrediente: "i4", cantidad_requerida: 0.2 },
+  { id_producto: "p8", id_ingrediente: "i6", cantidad_requerida: 0.15 },
+
+  { id_producto: "p9", id_ingrediente: "i2", cantidad_requerida: 1 },
+  { id_producto: "p9", id_ingrediente: "i4", cantidad_requerida: 0.15 },
+  { id_producto: "p9", id_ingrediente: "i6", cantidad_requerida: 0.08 },
+
+  { id_producto: "p10", id_ingrediente: "i2", cantidad_requerida: 1 },
+  { id_producto: "p10", id_ingrediente: "i3", cantidad_requerida: 0.1 },
+  { id_producto: "p10", id_ingrediente: "i4", cantidad_requerida: 0.1 },
+  { id_producto: "p10", id_ingrediente: "i6", cantidad_requerida: 0.1 },
+
+  { id_producto: "p11", id_ingrediente: "i2", cantidad_requerida: 1 },
+  { id_producto: "p11", id_ingrediente: "i3", cantidad_requerida: 0.15 },
+  { id_producto: "p11", id_ingrediente: "i6", cantidad_requerida: 0.08 },
+
+  { id_producto: "p12", id_ingrediente: "i17", cantidad_requerida: 0.2 },
+  { id_producto: "p13", id_ingrediente: "i19", cantidad_requerida: 0.1 },
+  { id_producto: "p13", id_ingrediente: "i8", cantidad_requerida: 0.05 },
+  { id_producto: "p14", id_ingrediente: "i9", cantidad_requerida: 0.2 },
+  { id_producto: "p15", id_ingrediente: "i18", cantidad_requerida: 0.3 },
+  { id_producto: "p15", id_ingrediente: "i7", cantidad_requerida: 0.05 },
+  { id_producto: "p15", id_ingrediente: "i20", cantidad_requerida: 0.1 },
 ];
