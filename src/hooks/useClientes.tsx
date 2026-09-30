@@ -1,31 +1,49 @@
-import { createContext, useContext, useState, type ReactNode } from "react";
-import { clientes as clientesMock, direcciones as direccionesMock } from "../mocks/clientes";
+import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from "react";
+import { apiClient } from "../lib/apiClient";
+import { useAuth } from "./useAuth";
 import type { Cliente, Direccion } from "../types";
 
 interface ClientesContextValue {
   clientes: Cliente[];
   direcciones: Direccion[];
   direccionesDe: (idCliente: string) => Direccion[];
-  guardarCliente: (cliente: Cliente) => void;
-  crearCliente: (cliente: Omit<Cliente, "id_cliente">) => void;
+  guardarCliente: (cliente: Cliente) => Promise<void>;
+  crearCliente: (cliente: Omit<Cliente, "id_cliente">) => Promise<void>;
 }
 
 const ClientesContext = createContext<ClientesContextValue | undefined>(undefined);
 
 export function ClientesProvider({ children }: { children: ReactNode }) {
-  const [clientes, setClientes] = useState<Cliente[]>(clientesMock);
-  const [direcciones] = useState<Direccion[]>(direccionesMock);
+  const { estaAutenticado } = useAuth();
+  const [clientes, setClientes] = useState<Cliente[]>([]);
+  const [direcciones, setDirecciones] = useState<Direccion[]>([]);
+
+  useEffect(() => {
+    // /clientes requiere sesión de staff — no tiene sentido pedirla en /login o /toma-orden.
+    if (!estaAutenticado) return;
+    apiClient
+      .get<Cliente[]>("/clientes")
+      .then(async (data) => {
+        setClientes(data);
+        const porCliente = await Promise.all(
+          data.map((c) => apiClient.get<Direccion[]>(`/clientes/${c.id_cliente}/direcciones`)),
+        );
+        setDirecciones(porCliente.flat());
+      })
+      .catch(() => setClientes([]));
+  }, [estaAutenticado]);
 
   const direccionesDe = (idCliente: string) => direcciones.filter((d) => d.id_cliente === idCliente);
 
-  const guardarCliente = (cliente: Cliente) => {
-    setClientes((prev) => prev.map((c) => (c.id_cliente === cliente.id_cliente ? cliente : c)));
-  };
+  const guardarCliente = useCallback(async (cliente: Cliente) => {
+    const actualizado = await apiClient.put<Cliente>(`/clientes/${cliente.id_cliente}`, cliente);
+    setClientes((prev) => prev.map((c) => (c.id_cliente === actualizado.id_cliente ? actualizado : c)));
+  }, []);
 
-  const crearCliente = (cliente: Omit<Cliente, "id_cliente">) => {
-    const nuevo: Cliente = { ...cliente, id_cliente: `c-${Date.now()}` };
+  const crearCliente = useCallback(async (cliente: Omit<Cliente, "id_cliente">) => {
+    const nuevo = await apiClient.post<Cliente>("/clientes", cliente);
     setClientes((prev) => [...prev, nuevo]);
-  };
+  }, []);
 
   return (
     <ClientesContext.Provider value={{ clientes, direcciones, direccionesDe, guardarCliente, crearCliente }}>

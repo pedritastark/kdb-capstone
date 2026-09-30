@@ -1,20 +1,31 @@
-import { createContext, useContext, useState, type ReactNode } from "react";
-import { pagos as pagosMock } from "../mocks/pagos";
+import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from "react";
+import { apiClient } from "../lib/apiClient";
+import { useAuth } from "./useAuth";
 import type { EstadoPago, Pago } from "../types";
 
 interface PagosContextValue {
   pagos: Pago[];
-  cambiarEstado: (idPago: string, estado: EstadoPago) => void;
+  cambiarEstado: (idPago: string, estado: EstadoPago) => Promise<void>;
 }
 
 const PagosContext = createContext<PagosContextValue | undefined>(undefined);
 
 export function PagosProvider({ children }: { children: ReactNode }) {
-  const [pagos, setPagos] = useState<Pago[]>(pagosMock);
+  const { estaAutenticado } = useAuth();
+  const [pagos, setPagos] = useState<Pago[]>([]);
 
-  const cambiarEstado = (idPago: string, estado: EstadoPago) => {
-    setPagos((prev) => prev.map((p) => (p.id_pago === idPago ? { ...p, estado } : p)));
-  };
+  useEffect(() => {
+    if (!estaAutenticado) return;
+    apiClient
+      .get<Pago[]>("/pagos")
+      .then(setPagos)
+      .catch(() => setPagos([]));
+  }, [estaAutenticado]);
+
+  const cambiarEstado = useCallback(async (idPago: string, estado: EstadoPago) => {
+    const actualizado = await apiClient.patch<Pago>(`/pagos/${idPago}/estado`, { estado });
+    setPagos((prev) => prev.map((p) => (p.id_pago === idPago ? actualizado : p)));
+  }, []);
 
   return <PagosContext.Provider value={{ pagos, cambiarEstado }}>{children}</PagosContext.Provider>;
 }

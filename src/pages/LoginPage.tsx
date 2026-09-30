@@ -2,6 +2,7 @@ import { useState, type FormEvent } from "react";
 import { Box, Button, Field, Flex, Input, Text, VStack } from "@chakra-ui/react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
+import { ApiError } from "../lib/apiClient";
 
 export function LoginPage() {
   const { iniciarSesion } = useAuth();
@@ -9,16 +10,24 @@ export function LoginPage() {
   const [correo, setCorreo] = useState("");
   const [contrasena, setContrasena] = useState("");
   const [error, setError] = useState("");
+  const [enviando, setEnviando] = useState(false);
 
-  const handleSubmit = (e: FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     if (!correo.trim() || !contrasena.trim()) {
       setError("Ingresa tu correo y contraseña.");
       return;
     }
     setError("");
-    iniciarSesion(correo);
-    navigate("/pedidos");
+    setEnviando(true);
+    try {
+      await iniciarSesion(correo.trim(), contrasena);
+      navigate("/pedidos");
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : "No se pudo iniciar sesión.");
+    } finally {
+      setEnviando(false);
+    }
   };
 
   return (
@@ -81,15 +90,11 @@ export function LoginPage() {
               </Text>
             )}
 
-            <Button type="submit" bg="accent.500" color="white" _hover={{ bg: "accent.600" }} w="full" mt={2}>
+            <Button type="submit" bg="accent.500" color="white" _hover={{ bg: "accent.600" }} w="full" mt={2} loading={enviando}>
               Ingresar
             </Button>
           </VStack>
         </form>
-
-        <Text fontSize="xs" color="text.tertiary" mt={6} textAlign="center">
-          Cualquier credencial funciona en este entorno de demostración.
-        </Text>
       </Box>
     </Flex>
   );

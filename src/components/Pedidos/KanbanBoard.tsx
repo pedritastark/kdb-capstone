@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Box, Flex, Text, VStack } from "@chakra-ui/react";
 import type { EstadoPedido, Pedido } from "../../types";
 import { usePedidos } from "../../hooks/usePedidos";
@@ -18,14 +18,9 @@ const columnas: Columna[] = [
 ];
 
 export function KanbanBoard() {
+  // El refetch periódico (cada 15s) vive en usePedidos/PedidosProvider.
   const { pedidos } = usePedidos();
   const [pedidoSeleccionado, setPedidoSeleccionado] = useState<Pedido | null>(null);
-  const [, forceTick] = useState(0);
-
-  useEffect(() => {
-    const id = setInterval(() => forceTick((t) => t + 1), 15000);
-    return () => clearInterval(id);
-  }, []);
 
   const idSeleccionado = pedidoSeleccionado?.id_pedido;
   const pedidoActualizado = idSeleccionado

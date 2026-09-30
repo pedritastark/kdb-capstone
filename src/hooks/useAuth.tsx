@@ -1,50 +1,52 @@
-import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from "react";
-import { usuarioActual } from "../mocks/usuarios";
+import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
+import { apiClient } from "../lib/apiClient";
+import { borrarToken, guardarToken, leerToken } from "../lib/authToken";
 import type { Usuario } from "../types";
-
-interface SesionGuardada {
-  usuario: Usuario;
-}
-
-const STORAGE_KEY = "danny-tacos-sesion";
 
 interface AuthContextValue {
   usuario: Usuario | null;
   estaAutenticado: boolean;
-  iniciarSesion: (correo: string) => void;
+  cargando: boolean;
+  iniciarSesion: (correo: string, password: string) => Promise<void>;
   cerrarSesion: () => void;
 }
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 
-function leerSesion(): Usuario | null {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return null;
-    const data = JSON.parse(raw) as SesionGuardada;
-    return data.usuario;
-  } catch {
-    return null;
-  }
-}
-
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [usuario, setUsuario] = useState<Usuario | null>(() => leerSesion());
+  const [usuario, setUsuario] = useState<Usuario | null>(null);
+  const [cargando, setCargando] = useState(true);
 
-  const iniciarSesion = useCallback((_correo: string) => {
-    const sesion: SesionGuardada = { usuario: usuarioActual };
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(sesion));
-    setUsuario(usuarioActual);
+  useEffect(() => {
+    const token = leerToken();
+    if (!token) {
+      setCargando(false);
+      return;
+    }
+    apiClient
+      .get<Usuario>("/auth/me")
+      .then(setUsuario)
+      .catch(() => borrarToken())
+      .finally(() => setCargando(false));
+  }, []);
+
+  const iniciarSesion = useCallback(async (correo: string, password: string) => {
+    const { token, usuario: nuevoUsuario } = await apiClient.post<{ token: string; usuario: Usuario }>(
+      "/auth/login",
+      { correo, password },
+    );
+    guardarToken(token);
+    setUsuario(nuevoUsuario);
   }, []);
 
   const cerrarSesion = useCallback(() => {
-    localStorage.removeItem(STORAGE_KEY);
+    borrarToken();
     setUsuario(null);
   }, []);
 
   const value = useMemo<AuthContextValue>(
-    () => ({ usuario, estaAutenticado: usuario !== null, iniciarSesion, cerrarSesion }),
-    [usuario, iniciarSesion, cerrarSesion],
+    () => ({ usuario, estaAutenticado: usuario !== null, cargando, iniciarSesion, cerrarSesion }),
+    [usuario, cargando, iniciarSesion, cerrarSesion],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

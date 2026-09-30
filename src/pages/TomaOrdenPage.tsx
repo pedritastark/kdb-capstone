@@ -2,13 +2,15 @@ import { useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { Box, Flex, Text } from "@chakra-ui/react";
 import { useProductos } from "../hooks/useProductos";
+import { usePedidos } from "../hooks/usePedidos";
+import { ApiError } from "../lib/apiClient";
 import { MesaGate } from "../components/TomaOrden/MesaGate";
 import { CategoriasView } from "../components/TomaOrden/CategoriasView";
 import { ProductosView } from "../components/TomaOrden/ProductosView";
 import { CarritoView } from "../components/TomaOrden/CarritoView";
 import { ConfirmacionView } from "../components/TomaOrden/ConfirmacionView";
 import { CartBar } from "../components/TomaOrden/CartBar";
-import type { Producto } from "../types";
+import type { MedioPago, Producto } from "../types";
 
 export interface ItemCarrito {
   producto: Producto;
@@ -22,9 +24,15 @@ export function TomaOrdenPage() {
   const [mesa, setMesa] = useState<string | null>(searchParams.get("mesa"));
 
   const { productos, categorias } = useProductos();
+  const { crearPedido } = usePedidos();
   const [vista, setVista] = useState<Vista>("categorias");
   const [categoriaId, setCategoriaId] = useState<string | null>(null);
   const [carrito, setCarrito] = useState<ItemCarrito[]>([]);
+  const [telefono, setTelefono] = useState("");
+  const [medioPago, setMedioPago] = useState<MedioPago>("efectivo");
+  const [enviando, setEnviando] = useState(false);
+  const [errorPedido, setErrorPedido] = useState("");
+  const [codigoPedido, setCodigoPedido] = useState<string | null>(null);
 
   if (!mesa) {
     return <MesaGate onConfirmar={setMesa} />;
@@ -61,13 +69,35 @@ export function TomaOrdenPage() {
     setVista("productos");
   };
 
-  const confirmarPedido = () => {
-    setCarrito([]);
-    setVista("confirmacion");
+  const confirmarPedido = async () => {
+    if (!telefono.trim()) {
+      setErrorPedido("Ingresa un teléfono de contacto.");
+      return;
+    }
+    setEnviando(true);
+    setErrorPedido("");
+    try {
+      const pedido = await crearPedido({
+        telefono_cliente: telefono.trim(),
+        tipo_entrega: "mesa",
+        numero_mesa: mesa,
+        medio_pago: medioPago,
+        items: carrito.map((i) => ({ id_producto: i.producto.id_producto, cantidad: i.cantidad })),
+      });
+      setCodigoPedido(pedido.codigo);
+      setCarrito([]);
+      setVista("confirmacion");
+    } catch (err) {
+      setErrorPedido(err instanceof ApiError ? err.message : "No se pudo enviar el pedido. Intenta de nuevo.");
+    } finally {
+      setEnviando(false);
+    }
   };
 
   const nuevoPedido = () => {
     setCategoriaId(null);
+    setTelefono("");
+    setCodigoPedido(null);
     setVista("categorias");
   };
 
@@ -133,6 +163,12 @@ export function TomaOrdenPage() {
           <CarritoView
             carrito={carrito}
             total={total}
+            telefono={telefono}
+            onTelefonoChange={setTelefono}
+            medioPago={medioPago}
+            onMedioPagoChange={setMedioPago}
+            enviando={enviando}
+            error={errorPedido}
             onVolver={() => setVista(categoriaId ? "productos" : "categorias")}
             onAgregar={(idProducto) => {
               const item = carrito.find((i) => i.producto.id_producto === idProducto);
@@ -143,7 +179,9 @@ export function TomaOrdenPage() {
           />
         )}
 
-        {vista === "confirmacion" && <ConfirmacionView mesa={mesa} onNuevoPedido={nuevoPedido} />}
+        {vista === "confirmacion" && (
+          <ConfirmacionView mesa={mesa} codigo={codigoPedido} onNuevoPedido={nuevoPedido} />
+        )}
 
         {(vista === "categorias" || vista === "productos") && (
           <CartBar totalItems={totalItems} total={total} onVerPedido={() => setVista("carrito")} />

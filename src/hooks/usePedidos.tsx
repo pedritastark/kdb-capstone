@@ -1,7 +1,7 @@
-import { createContext, useContext, useState, type ReactNode } from "react";
-import { pedidos as pedidosMock, detallePedidos as detalleMock, historialEstados as historialMock } from "../mocks/pedidos";
-import { usuarioActual } from "../mocks/usuarios";
-import type { DetallePedido, EstadoPedido, HistorialEstado, Pedido } from "../types";
+import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from "react";
+import { apiClient } from "../lib/apiClient";
+import { useAuth } from "./useAuth";
+import type { DetallePedido, EstadoPedido, HistorialEstado, Pedido, TipoEntrega } from "../types";
 
 export function siguienteEstado(pedido: Pedido): EstadoPedido | null {
   switch (pedido.estado) {
@@ -19,72 +19,123 @@ export function siguienteEstado(pedido: Pedido): EstadoPedido | null {
   }
 }
 
+interface DetalleCompleto {
+  detalles: DetallePedido[];
+  historial: HistorialEstado[];
+}
+
+export interface CrearPedidoInput {
+  telefono_cliente: string;
+  nombre_cliente?: string;
+  tipo_entrega: TipoEntrega;
+  numero_mesa?: string | null;
+  id_direccion?: string | null;
+  medio_pago: "efectivo" | "nequi" | "daviplata" | "llave";
+  items: { id_producto: string; cantidad: number; observaciones?: string }[];
+  observaciones?: string;
+}
+
 interface PedidosContextValue {
   pedidos: Pedido[];
   detallePedidos: DetallePedido[];
   historialEstados: HistorialEstado[];
   detallesDe: (idPedido: string) => DetallePedido[];
   historialDe: (idPedido: string) => HistorialEstado[];
-  avanzarEstado: (idPedido: string) => void;
-  cancelarPedido: (idPedido: string, motivo: string) => void;
+  avanzarEstado: (idPedido: string) => Promise<void>;
+  cancelarPedido: (idPedido: string, motivo: string) => Promise<void>;
+  crearPedido: (input: CrearPedidoInput) => Promise<Pedido>;
 }
 
 const PedidosContext = createContext<PedidosContextValue | undefined>(undefined);
 
+const INTERVALO_REFRESCO_MS = 15000;
+
 export function PedidosProvider({ children }: { children: ReactNode }) {
-  const [pedidos, setPedidos] = useState<Pedido[]>(pedidosMock);
-  const [historialEstados, setHistorialEstados] = useState<HistorialEstado[]>(historialMock);
-  const [detallePedidos] = useState<DetallePedido[]>(detalleMock);
+  const { estaAutenticado } = useAuth();
+  const [pedidos, setPedidos] = useState<Pedido[]>([]);
+  const [detallePorPedido, setDetallePorPedido] = useState<Record<string, DetalleCompleto>>({});
 
-  const registrarHistorial = (
-    idPedido: string,
-    estadoAnterior: EstadoPedido,
-    estadoNuevo: EstadoPedido,
-    observacion: string,
-  ) => {
-    const entrada: HistorialEstado = {
-      id_historial: `h-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
-      id_pedido: idPedido,
-      id_usuario: usuarioActual.id_usuario,
-      estado_anterior: estadoAnterior,
-      estado_nuevo: estadoNuevo,
-      observacion,
-      hora_cambio: new Date().toISOString(),
-    };
-    setHistorialEstados((prev) => [...prev, entrada]);
+  const recargarPedidos = useCallback(() => {
+    apiClient
+      .get<Pedido[]>("/pedidos")
+      .then(setPedidos)
+      .catch(() => {});
+  }, []);
+
+  useEffect(() => {
+    // GET /pedidos es de uso interno (Kanban de cocina/caja): requiere sesión.
+    if (!estaAutenticado) return;
+    recargarPedidos();
+    const id = setInterval(recargarPedidos, INTERVALO_REFRESCO_MS);
+    return () => clearInterval(id);
+  }, [estaAutenticado, recargarPedidos]);
+
+  const cargarDetalleCompleto = (idPedido: string) => {
+    apiClient
+      .get<{ detalles: DetallePedido[]; historial: HistorialEstado[] }>(`/pedidos/${idPedido}`)
+      .then(({ detalles, historial }) => {
+        setDetallePorPedido((prev) => ({ ...prev, [idPedido]: { detalles, historial } }));
+      })
+      .catch(() => {});
   };
 
-  const avanzarEstado = (idPedido: string) => {
-    setPedidos((prev) =>
-      prev.map((p) => {
-        if (p.id_pedido !== idPedido) return p;
-        const nuevo = siguienteEstado(p);
-        if (!nuevo) return p;
-        registrarHistorial(idPedido, p.estado, nuevo, "");
-        return { ...p, estado: nuevo };
-      }),
-    );
+  const detallesDe = (idPedido: string): DetallePedido[] => {
+    const cache = detallePorPedido[idPedido];
+    if (!cache) {
+      cargarDetalleCompleto(idPedido);
+      return [];
+    }
+    return cache.detalles;
   };
 
-  const cancelarPedido = (idPedido: string, motivo: string) => {
-    setPedidos((prev) =>
-      prev.map((p) => {
-        if (p.id_pedido !== idPedido) return p;
-        registrarHistorial(idPedido, p.estado, "cancelado", motivo);
-        return { ...p, estado: "cancelado", observaciones: motivo || p.observaciones };
-      }),
-    );
+  const historialDe = (idPedido: string): HistorialEstado[] => {
+    const cache = detallePorPedido[idPedido];
+    if (!cache) {
+      cargarDetalleCompleto(idPedido);
+      return [];
+    }
+    return cache.historial;
   };
 
-  const detallesDe = (idPedido: string) => detallePedidos.filter((d) => d.id_pedido === idPedido);
-  const historialDe = (idPedido: string) =>
-    historialEstados
-      .filter((h) => h.id_pedido === idPedido)
-      .sort((a, b) => new Date(a.hora_cambio).getTime() - new Date(b.hora_cambio).getTime());
+  const avanzarEstado = useCallback(async (idPedido: string) => {
+    const actualizado = await apiClient.patch<Pedido>(`/pedidos/${idPedido}/avanzar`);
+    setPedidos((prev) => prev.map((p) => (p.id_pedido === idPedido ? actualizado : p)));
+    setDetallePorPedido((prev) => {
+      const { [idPedido]: _obsoleto, ...resto } = prev;
+      return resto;
+    });
+  }, []);
+
+  const cancelarPedido = useCallback(async (idPedido: string, motivo: string) => {
+    const actualizado = await apiClient.post<Pedido>(`/pedidos/${idPedido}/cancelar`, { motivo });
+    setPedidos((prev) => prev.map((p) => (p.id_pedido === idPedido ? actualizado : p)));
+    setDetallePorPedido((prev) => {
+      const { [idPedido]: _obsoleto, ...resto } = prev;
+      return resto;
+    });
+  }, []);
+
+  const crearPedido = useCallback(async (input: CrearPedidoInput) => {
+    const pedido = await apiClient.post<Pedido>("/pedidos", input);
+    setPedidos((prev) => [...prev, pedido]);
+    return pedido;
+  }, []);
+
+  const detallePedidos = Object.values(detallePorPedido).flatMap((d) => d.detalles);
+  const historialEstados = Object.values(detallePorPedido).flatMap((d) => d.historial);
 
   return (
     <PedidosContext.Provider
-      value={{ pedidos, detallePedidos, historialEstados, detallesDe, historialDe, avanzarEstado, cancelarPedido }}
+      value={{
+        pedidos,
+        detallePedidos,
+        historialEstados,
+        detallesDe,
+        historialDe,
+        avanzarEstado,
+        cancelarPedido,
+        crearPedido,
+      }}
     >
       {children}
     </PedidosContext.Provider>

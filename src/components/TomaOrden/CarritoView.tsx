@@ -1,19 +1,42 @@
-import { Box, Button, Flex, IconButton, Text } from "@chakra-ui/react";
+import { Box, Button, Flex, IconButton, Input, NativeSelect, Text } from "@chakra-ui/react";
 import { FiArrowLeft, FiMinus, FiPlus, FiTrash2 } from "react-icons/fi";
 import type { ItemCarrito } from "../../pages/TomaOrdenPage";
+import type { MedioPago } from "../../types";
+import { MEDIO_PAGO_LABEL } from "../../utils/constants";
 import { formatoMoneda } from "../../utils/format";
 import { EMOJI_CATEGORIA } from "./shared";
 
 interface CarritoViewProps {
   carrito: ItemCarrito[];
   total: number;
+  telefono: string;
+  onTelefonoChange: (valor: string) => void;
+  medioPago: MedioPago;
+  onMedioPagoChange: (valor: MedioPago) => void;
+  enviando: boolean;
+  error: string;
   onVolver: () => void;
   onAgregar: (idProducto: string) => void;
   onQuitar: (idProducto: string) => void;
   onConfirmar: () => void;
 }
 
-export function CarritoView({ carrito, total, onVolver, onAgregar, onQuitar, onConfirmar }: CarritoViewProps) {
+const MEDIOS_PAGO: MedioPago[] = ["efectivo", "nequi", "daviplata", "llave"];
+
+export function CarritoView({
+  carrito,
+  total,
+  telefono,
+  onTelefonoChange,
+  medioPago,
+  onMedioPagoChange,
+  enviando,
+  error,
+  onVolver,
+  onAgregar,
+  onQuitar,
+  onConfirmar,
+}: CarritoViewProps) {
   return (
     <Box>
       <Flex align="center" gap={3} px={5} pt={5} pb={4}>
@@ -87,6 +110,43 @@ export function CarritoView({ carrito, total, onVolver, onAgregar, onQuitar, onC
             </Flex>
           ))}
         </Flex>
+
+        {carrito.length > 0 && (
+          <Box mt={5}>
+            <Text fontSize="xs" fontWeight="700" color="text.tertiary" mb={2} letterSpacing="wide">
+              TUS DATOS
+            </Text>
+            <Text color="text.secondary" fontSize="xs" mb={1}>
+              Teléfono de contacto
+            </Text>
+            <Input
+              type="tel"
+              inputMode="numeric"
+              placeholder="Ej. 3001234567"
+              value={telefono}
+              onChange={(e) => onTelefonoChange(e.target.value)}
+              bg="bg.surface"
+              borderColor="border.subtle"
+              mb={3}
+            />
+            <Text color="text.secondary" fontSize="xs" mb={1}>
+              Medio de pago
+            </Text>
+            <NativeSelect.Root bg="bg.surface">
+              <NativeSelect.Field
+                value={medioPago}
+                onChange={(e) => onMedioPagoChange(e.target.value as MedioPago)}
+              >
+                {MEDIOS_PAGO.map((medio) => (
+                  <option key={medio} value={medio}>
+                    {MEDIO_PAGO_LABEL[medio]}
+                  </option>
+                ))}
+              </NativeSelect.Field>
+              <NativeSelect.Indicator />
+            </NativeSelect.Root>
+          </Box>
+        )}
       </Box>
 
       {carrito.length > 0 && (
@@ -104,13 +164,28 @@ export function CarritoView({ carrito, total, onVolver, onAgregar, onQuitar, onC
           pt={4}
           style={{ paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 16px)" }}
         >
+          {error && (
+            <Text color="danger.500" fontSize="xs" mb={2} textAlign="center">
+              {error}
+            </Text>
+          )}
           <Flex justify="space-between" align="center" mb={3}>
             <Text color="text.secondary" fontSize="sm">Total</Text>
             <Text fontWeight="800" fontSize="xl" color="accent.500">
               {formatoMoneda(total)}
             </Text>
           </Flex>
-          <Button w="full" h="56px" fontSize="md" bg="accent.500" color="white" _hover={{ bg: "accent.600" }} onClick={onConfirmar}>
+          <Button
+            w="full"
+            h="56px"
+            fontSize="md"
+            bg="accent.500"
+            color="white"
+            _hover={{ bg: "accent.600" }}
+            onClick={onConfirmar}
+            loading={enviando}
+            disabled={!telefono.trim()}
+          >
             Confirmar pedido
           </Button>
         </Box>

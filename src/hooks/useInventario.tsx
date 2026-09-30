@@ -1,6 +1,6 @@
-import { createContext, useContext, useState, type ReactNode } from "react";
-import { ingredientes as ingredientesMock, movimientos as movimientosMock } from "../mocks/ingredientes";
-import { productoIngredientes } from "../mocks/productos";
+import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from "react";
+import { apiClient } from "../lib/apiClient";
+import { useAuth } from "./useAuth";
 import type { Ingrediente, MovimientoInventario, TipoMovimientoInventario } from "../types";
 
 interface RegistrarMovimientoInput {
@@ -11,75 +11,93 @@ interface RegistrarMovimientoInput {
   id_pedido?: string | null;
 }
 
+type IngredienteConCantidad = Ingrediente & { cantidad_requerida: number };
+
 interface InventarioContextValue {
   ingredientes: Ingrediente[];
   movimientos: MovimientoInventario[];
-  productoIngredientes: typeof productoIngredientes;
   movimientosDe: (idIngrediente: string) => MovimientoInventario[];
-  ingredientesDeProducto: (idProducto: string) => (Ingrediente & { cantidad_requerida: number })[];
-  toggleDisponible: (idIngrediente: string) => void;
-  registrarMovimiento: (input: RegistrarMovimientoInput) => void;
+  ingredientesDeProducto: (idProducto: string) => IngredienteConCantidad[];
+  toggleDisponible: (idIngrediente: string) => Promise<void>;
+  registrarMovimiento: (input: RegistrarMovimientoInput) => Promise<void>;
 }
 
 const InventarioContext = createContext<InventarioContextValue | undefined>(undefined);
 
 export function InventarioProvider({ children }: { children: ReactNode }) {
-  const [ingredientes, setIngredientes] = useState<Ingrediente[]>(ingredientesMock);
-  const [movimientos, setMovimientos] = useState<MovimientoInventario[]>(movimientosMock);
+  const { estaAutenticado } = useAuth();
+  const [ingredientes, setIngredientes] = useState<Ingrediente[]>([]);
+  const [movimientosPorIngrediente, setMovimientosPorIngrediente] = useState<
+    Record<string, MovimientoInventario[]>
+  >({});
+  const [ingredientesPorProducto, setIngredientesPorProducto] = useState<
+    Record<string, IngredienteConCantidad[]>
+  >({});
 
-  const movimientosDe = (idIngrediente: string) =>
-    movimientos
-      .filter((m) => m.id_ingrediente === idIngrediente)
-      .sort((a, b) => new Date(b.fecha_movimiento).getTime() - new Date(a.fecha_movimiento).getTime());
+  useEffect(() => {
+    if (!estaAutenticado) return;
+    apiClient
+      .get<Ingrediente[]>("/ingredientes")
+      .then(setIngredientes)
+      .catch(() => setIngredientes([]));
+  }, [estaAutenticado]);
 
-  const ingredientesDeProducto = (idProducto: string) =>
-    productoIngredientes
-      .filter((pi) => pi.id_producto === idProducto)
-      .map((pi) => {
-        const ing = ingredientes.find((i) => i.id_ingrediente === pi.id_ingrediente)!;
-        return { ...ing, cantidad_requerida: pi.cantidad_requerida };
-      })
-      .filter((i) => i.id_ingrediente !== undefined);
-
-  const toggleDisponible = (idIngrediente: string) => {
-    setIngredientes((prev) =>
-      prev.map((i) => (i.id_ingrediente === idIngrediente ? { ...i, disponible: !i.disponible } : i)),
-    );
+  const movimientosDe = (idIngrediente: string): MovimientoInventario[] => {
+    const cache = movimientosPorIngrediente[idIngrediente];
+    if (!cache) {
+      apiClient
+        .get<MovimientoInventario[]>(`/ingredientes/${idIngrediente}/movimientos`)
+        .then((data) => setMovimientosPorIngrediente((prev) => ({ ...prev, [idIngrediente]: data })))
+        .catch(() => {});
+      return [];
+    }
+    return cache;
   };
 
-  const registrarMovimiento = (input: RegistrarMovimientoInput) => {
-    const ingrediente = ingredientes.find((i) => i.id_ingrediente === input.id_ingrediente);
-    if (!ingrediente) return;
-
-    const esEntrada = input.tipo_movimiento === "entrada" || input.tipo_movimiento === "devolucion";
-    const delta = esEntrada ? input.cantidad : -input.cantidad;
-    const cantidadAnterior = ingrediente.cantidad_actual;
-    const cantidadNueva = Math.max(0, cantidadAnterior + delta);
-
-    const movimiento: MovimientoInventario = {
-      id_movimiento: `m-${Date.now()}`,
-      id_ingrediente: input.id_ingrediente,
-      id_pedido: input.id_pedido ?? null,
-      tipo_movimiento: input.tipo_movimiento,
-      cantidad: input.cantidad,
-      cantidad_anterior: cantidadAnterior,
-      cantidad_nueva: cantidadNueva,
-      motivo: input.motivo,
-      fecha_movimiento: new Date().toISOString(),
-    };
-
-    setMovimientos((prev) => [movimiento, ...prev]);
-    setIngredientes((prev) =>
-      prev.map((i) => (i.id_ingrediente === input.id_ingrediente ? { ...i, cantidad_actual: cantidadNueva } : i)),
-    );
+  const ingredientesDeProducto = (idProducto: string): IngredienteConCantidad[] => {
+    const cache = ingredientesPorProducto[idProducto];
+    if (!cache) {
+      if (idProducto) {
+        apiClient
+          .get<IngredienteConCantidad[]>(`/productos/${idProducto}/ingredientes`)
+          .then((data) => setIngredientesPorProducto((prev) => ({ ...prev, [idProducto]: data })))
+          .catch(() => {});
+      }
+      return [];
+    }
+    return cache;
   };
+
+  const toggleDisponible = useCallback(async (idIngrediente: string) => {
+    const actual = ingredientes.find((i) => i.id_ingrediente === idIngrediente);
+    if (!actual) return;
+    const actualizado = await apiClient.patch<Ingrediente>(`/ingredientes/${idIngrediente}/disponible`, {
+      disponible: !actual.disponible,
+    });
+    setIngredientes((prev) => prev.map((i) => (i.id_ingrediente === idIngrediente ? actualizado : i)));
+  }, [ingredientes]);
+
+  const registrarMovimiento = useCallback(async (input: RegistrarMovimientoInput) => {
+    const movimiento = await apiClient.post<MovimientoInventario>(
+      `/ingredientes/${input.id_ingrediente}/movimientos`,
+      input,
+    );
+    setMovimientosPorIngrediente((prev) => ({
+      ...prev,
+      [input.id_ingrediente]: [movimiento, ...(prev[input.id_ingrediente] ?? [])],
+    }));
+    // El backend recalculó cantidad_actual (vía el trigger de la BD); se relee el ingrediente.
+    const actualizado = await apiClient.get<Ingrediente[]>("/ingredientes");
+    setIngredientes(actualizado);
+  }, []);
+
+  const movimientos = Object.values(movimientosPorIngrediente).flat();
 
   return (
     <InventarioContext.Provider
       value={{
         ingredientes,
         movimientos,
-        productoIngredientes,
         movimientosDe,
         ingredientesDeProducto,
         toggleDisponible,
