@@ -13,7 +13,10 @@ services:
     # preDeployCommand no está disponible en el plan free de Render, así que
     # la migración (idempotente — segura de repetir en cada deploy) se corre
     # como parte del build en vez de como paso aparte.
-    buildCommand: npm install && npm run build && npm run migrate
+    # --include=dev es necesario porque NODE_ENV=production (abajo) hace que
+    # "npm install" se salte devDependencies por defecto — y ahí viven
+    # typescript/@types/*/tsx, que el build sí necesita.
+    buildCommand: npm install --include=dev && npm run build && npm run migrate
     startCommand: npm run start
     envVars:
       - key: DATABASE_URL
