@@ -34,8 +34,9 @@ y `https://dannytacos-frontend-xxxx.onrender.com`:
 ## 3. Verificar
 
 1. `GET https://dannytacos-api-xxxx.onrender.com/api/health` → `{"ok":true}`.
-2. El `preDeployCommand` (`npm run migrate`) ya corrió el esquema completo
-   (`migrations/0001..0008`, sin el seed) contra `dannytacos-db` — confírmalo
+2. El build (`npm run migrate`, al final de `buildCommand` — el plan free no
+   soporta `preDeployCommand`) ya corrió el esquema completo
+   (`migrations/0001..0010`, sin el seed) contra `dannytacos-db` — confírmalo
    viendo el log del deploy.
 3. Abre el frontend, intenta iniciar sesión — sin usuarios todavía va a
    fallar porque la base está vacía (ver paso 4).

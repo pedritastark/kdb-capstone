@@ -10,9 +10,11 @@ services:
     runtime: node
     plan: free
     rootDir: server
-    buildCommand: npm install && npm run build
+    # preDeployCommand no está disponible en el plan free de Render, así que
+    # la migración (idempotente — segura de repetir en cada deploy) se corre
+    # como parte del build en vez de como paso aparte.
+    buildCommand: npm install && npm run build && npm run migrate
     startCommand: npm run start
-    preDeployCommand: npm run migrate
     envVars:
       - key: DATABASE_URL
         fromDatabase:
