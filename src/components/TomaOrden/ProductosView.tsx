@@ -3,7 +3,7 @@ import { FiArrowLeft, FiMinus, FiPlus } from "react-icons/fi";
 import type { Categoria, Producto } from "../../types";
 import { resolveImageUrl } from "../../lib/images";
 import { formatoMoneda } from "../../utils/format";
-import { EMOJI_CATEGORIA, colorPorIndice } from "./shared";
+import { estiloCategoria } from "./shared";
 
 interface ProductosViewProps {
   categorias: Categoria[];
@@ -14,6 +14,7 @@ interface ProductosViewProps {
   onVolver: () => void;
   onAgregar: (producto: Producto) => void;
   onQuitar: (idProducto: string) => void;
+  onPersonalizar: (producto: Producto) => void;
 }
 
 export function ProductosView({
@@ -25,6 +26,7 @@ export function ProductosView({
   onVolver,
   onAgregar,
   onQuitar,
+  onPersonalizar,
 }: ProductosViewProps) {
   const categoriaActual = categorias.find((c) => c.id_categoria === categoriaId);
   const productosCategoria = productos.filter((p) => p.id_categoria === categoriaId);
@@ -43,26 +45,39 @@ export function ProductosView({
       <Flex gap={2} px={5} pb={4} overflowX="auto">
         {categorias.map((c, i) => {
           const activa = c.id_categoria === categoriaId;
-          const color = colorPorIndice(i);
+          const estilo = estiloCategoria(c.nombre, i);
+          const imagen = resolveImageUrl(estilo.imagen);
           return (
-            <Box
+            <Flex
               key={c.id_categoria}
               as="button"
               onClick={() => onSeleccionarCategoria(c.id_categoria)}
+              align="center"
+              gap={2}
               flexShrink={0}
-              px={4}
-              py={2}
+              pl={imagen ? 1.5 : 4}
+              pr={4}
+              py={1.5}
               borderRadius="full"
               fontSize="xs"
               fontWeight="700"
-              bg={activa ? color : "bg.inset"}
-              color={activa ? "black" : "text.secondary"}
+              bgImage={activa ? estilo.gradiente : undefined}
+              bg={activa ? undefined : "bg.inset"}
+              color={activa ? "white" : "text.secondary"}
               border="1px solid"
-              borderColor={activa ? color : "border.subtle"}
+              borderColor={activa ? "transparent" : "border.subtle"}
               cursor="pointer"
+              transition="all 0.15s ease"
             >
-              {EMOJI_CATEGORIA[c.id_categoria] ?? "🍽️"} {c.nombre}
-            </Box>
+              {imagen && (
+                <img
+                  src={imagen}
+                  alt=""
+                  style={{ width: "26px", height: "26px", borderRadius: "9999px", objectFit: "cover" }}
+                />
+              )}
+              {c.nombre}
+            </Flex>
           );
         })}
       </Flex>
@@ -72,6 +87,7 @@ export function ProductosView({
           {productosCategoria.map((p) => {
             const cantidad = cantidadEnCarrito(p.id_producto);
             const imagen = resolveImageUrl(p.imagen_url);
+            const estiloProducto = estiloCategoria(categoriaActual?.nombre, 0);
             return (
               <Flex
                 key={p.id_producto}
@@ -84,33 +100,42 @@ export function ProductosView({
                 align="center"
               >
                 <Flex
+                  as="button"
+                  onClick={() => onPersonalizar(p)}
                   w="56px"
                   h="56px"
                   borderRadius="12px"
-                  bg="bg.inset"
+                  bgImage={imagen ? undefined : estiloProducto.gradiente}
+                  bg={imagen ? "bg.inset" : undefined}
                   align="center"
                   justify="center"
                   fontSize="28px"
                   flexShrink={0}
                   overflow="hidden"
+                  cursor="pointer"
                 >
                   {imagen ? (
                     <img src={imagen} alt={p.nombre} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                   ) : (
-                    EMOJI_CATEGORIA[p.id_categoria] ?? "🍽️"
+                    estiloProducto.emoji
                   )}
                 </Flex>
 
-                <Box flex={1} minW={0}>
+                <Box as="button" onClick={() => onPersonalizar(p)} flex={1} minW={0} textAlign="left" cursor="pointer">
                   <Text fontWeight="700" color="white" fontSize="sm" lineClamp={1}>
                     {p.nombre}
                   </Text>
                   <Text fontSize="xs" color="text.tertiary" lineClamp={2} mb={1}>
                     {p.descripcion}
                   </Text>
-                  <Text fontWeight="800" color="accent.500" fontSize="sm">
-                    {formatoMoneda(p.precio)}
-                  </Text>
+                  <Flex align="center" gap={2}>
+                    <Text fontWeight="800" color="accent.500" fontSize="sm">
+                      {formatoMoneda(p.precio)}
+                    </Text>
+                    <Text fontSize="10px" color="text.tertiary">
+                      · toca para personalizar
+                    </Text>
+                  </Flex>
                 </Box>
 
                 {cantidad === 0 ? (

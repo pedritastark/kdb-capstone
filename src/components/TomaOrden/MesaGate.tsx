@@ -1,11 +1,13 @@
 import { useState } from "react";
-import { Box, Button, Flex, Input, Text } from "@chakra-ui/react";
+import { Box, Button, Flex, IconButton, Input, Text } from "@chakra-ui/react";
+import { FiArrowLeft } from "react-icons/fi";
 
 interface MesaGateProps {
   onConfirmar: (mesa: string) => void;
+  onVolver?: () => void;
 }
 
-export function MesaGate({ onConfirmar }: MesaGateProps) {
+export function MesaGate({ onConfirmar, onVolver }: MesaGateProps) {
   const [valor, setValor] = useState("");
 
   const continuar = () => {
@@ -16,7 +18,14 @@ export function MesaGate({ onConfirmar }: MesaGateProps) {
   return (
     <Flex minH="100vh" bg="bg.canvas" align="center" justify="center" px={6}>
       <Box textAlign="center" maxW="360px" w="full">
-        <Text fontSize="56px" mb={2}>🌮</Text>
+        {onVolver && (
+          <Flex justify="flex-start" mb={2}>
+            <IconButton aria-label="Volver" variant="ghost" color="text.secondary" size="sm" onClick={onVolver}>
+              <FiArrowLeft />
+            </IconButton>
+          </Flex>
+        )}
+        <Text fontSize="56px" mb={2}>🍽️</Text>
         <Text fontFamily="heading" letterSpacing="wide" fontSize="2xl" color="white" mb={1}>
           DANNY TACOS
         </Text>

@@ -4,14 +4,7 @@ import type { Producto } from "../../types";
 import { useProductos } from "../../hooks/useProductos";
 import { formatoMoneda } from "../../utils/format";
 import { resolveImageUrl } from "../../lib/images";
-
-const EMOJI_CATEGORIA: Record<string, string> = {
-  cat1: "🌮",
-  cat2: "🌯",
-  cat3: "🧀",
-  cat4: "🥤",
-  cat5: "🍟",
-};
+import { estiloCategoria } from "../TomaOrden/shared";
 
 interface ProductoCardProps {
   producto: Producto;
@@ -22,6 +15,7 @@ export function ProductoCard({ producto, onEditar }: ProductoCardProps) {
   const { categorias, toggleDisponible, toggleActivo } = useProductos();
   const categoria = categorias.find((c) => c.id_categoria === producto.id_categoria);
   const imagen = resolveImageUrl(producto.imagen_url);
+  const estilo = estiloCategoria(categoria?.nombre, 0);
 
   return (
     <Box
@@ -34,11 +28,19 @@ export function ProductoCard({ producto, onEditar }: ProductoCardProps) {
       transition="transform 0.15s ease"
       _hover={{ transform: "translateY(-2px)" }}
     >
-      <Flex h="120px" align="center" justify="center" bg="bg.inset" fontSize="48px" overflow="hidden">
+      <Flex
+        h="120px"
+        align="center"
+        justify="center"
+        bgImage={imagen ? undefined : estilo.gradiente}
+        bg={imagen ? "bg.inset" : undefined}
+        fontSize="48px"
+        overflow="hidden"
+      >
         {imagen ? (
           <img src={imagen} alt={producto.nombre} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
         ) : (
-          EMOJI_CATEGORIA[producto.id_categoria] ?? "🍽️"
+          estilo.emoji
         )}
       </Flex>
 

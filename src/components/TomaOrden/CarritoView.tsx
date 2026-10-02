@@ -1,15 +1,17 @@
 import { Box, Button, Flex, IconButton, Input, NativeSelect, Text } from "@chakra-ui/react";
 import { FiArrowLeft, FiMinus, FiPlus, FiTrash2 } from "react-icons/fi";
 import type { ItemCarrito } from "../../pages/TomaOrdenPage";
-import type { MedioPago } from "../../types";
+import type { Categoria, MedioPago } from "../../types";
 import { resolveImageUrl } from "../../lib/images";
 import { MEDIO_PAGO_LABEL } from "../../utils/constants";
 import { formatoMoneda } from "../../utils/format";
-import { EMOJI_CATEGORIA } from "./shared";
+import { estiloCategoria } from "./shared";
 
 interface CarritoViewProps {
   carrito: ItemCarrito[];
+  categorias: Categoria[];
   total: number;
+  resumenEntrega: string;
   telefono: string;
   onTelefonoChange: (valor: string) => void;
   medioPago: MedioPago;
@@ -17,8 +19,8 @@ interface CarritoViewProps {
   enviando: boolean;
   error: string;
   onVolver: () => void;
-  onAgregar: (idProducto: string) => void;
-  onQuitar: (idProducto: string) => void;
+  onAgregar: (claveLinea: string) => void;
+  onQuitar: (claveLinea: string) => void;
   onConfirmar: () => void;
 }
 
@@ -26,7 +28,9 @@ const MEDIOS_PAGO: MedioPago[] = ["efectivo", "nequi", "daviplata", "llave"];
 
 export function CarritoView({
   carrito,
+  categorias,
   total,
+  resumenEntrega,
   telefono,
   onTelefonoChange,
   medioPago,
@@ -49,6 +53,16 @@ export function CarritoView({
         </Text>
       </Flex>
 
+      {resumenEntrega && (
+        <Box px={5} pb={4}>
+          <Box bg="bg.inset" borderRadius="full" px={4} py={2} display="inline-block">
+            <Text fontSize="xs" color="accent.400" fontWeight="700">
+              {resumenEntrega}
+            </Text>
+          </Box>
+        </Box>
+      )}
+
       <Box px={5} pb={32}>
         {carrito.length === 0 && (
           <Text color="text.tertiary" fontSize="sm" textAlign="center" mt={12}>
@@ -57,11 +71,15 @@ export function CarritoView({
         )}
 
         <Flex direction="column" gap={3}>
-          {carrito.map(({ producto, cantidad }) => {
+          {carrito.map((item) => {
+            const { producto, cantidad, claveLinea, excluidos, adicionales } = item;
             const imagen = resolveImageUrl(producto.imagen_url);
+            const nombreCategoria = categorias.find((c) => c.id_categoria === producto.id_categoria)?.nombre;
+            const estilo = estiloCategoria(nombreCategoria, 0);
+            const precioUnitario = producto.precio + adicionales.reduce((s, a) => s + a.precio_adicional, 0);
             return (
             <Flex
-              key={producto.id_producto}
+              key={claveLinea}
               bg="bg.surface"
               border="1px solid"
               borderColor="border.subtle"
@@ -70,11 +88,22 @@ export function CarritoView({
               gap={3}
               align="center"
             >
-              <Flex w="48px" h="48px" borderRadius="10px" bg="bg.inset" align="center" justify="center" fontSize="24px" flexShrink={0} overflow="hidden">
+              <Flex
+                w="48px"
+                h="48px"
+                borderRadius="10px"
+                bgImage={imagen ? undefined : estilo.gradiente}
+                bg={imagen ? "bg.inset" : undefined}
+                align="center"
+                justify="center"
+                fontSize="24px"
+                flexShrink={0}
+                overflow="hidden"
+              >
                 {imagen ? (
                   <img src={imagen} alt={producto.nombre} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                 ) : (
-                  EMOJI_CATEGORIA[producto.id_categoria] ?? "🍽️"
+                  estilo.emoji
                 )}
               </Flex>
 
@@ -83,8 +112,18 @@ export function CarritoView({
                   {producto.nombre}
                 </Text>
                 <Text fontSize="xs" color="text.tertiary">
-                  {formatoMoneda(producto.precio)} c/u
+                  {formatoMoneda(precioUnitario)} c/u
                 </Text>
+                {excluidos.length > 0 && (
+                  <Text fontSize="xs" color="danger.400" lineClamp={1}>
+                    Sin: {excluidos.join(", ")}
+                  </Text>
+                )}
+                {adicionales.length > 0 && (
+                  <Text fontSize="xs" color="success.400" lineClamp={1}>
+                    + {adicionales.map((a) => a.nombre).join(", ")}
+                  </Text>
+                )}
               </Box>
 
               <Flex align="center" gap={2} flexShrink={0}>
@@ -95,7 +134,7 @@ export function CarritoView({
                   borderColor="border.subtle"
                   color="text.primary"
                   borderRadius="full"
-                  onClick={() => onQuitar(producto.id_producto)}
+                  onClick={() => onQuitar(claveLinea)}
                 >
                   {cantidad === 1 ? <FiTrash2 /> : <FiMinus />}
                 </IconButton>
@@ -109,7 +148,7 @@ export function CarritoView({
                   color="white"
                   borderRadius="full"
                   _hover={{ bg: "accent.600" }}
-                  onClick={() => onAgregar(producto.id_producto)}
+                  onClick={() => onAgregar(claveLinea)}
                 >
                   <FiPlus />
                 </IconButton>
