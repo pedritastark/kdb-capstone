@@ -12,7 +12,14 @@
 --   * tiempo_preparacion_min = valor por categoría (Tacos 8, Antojitos 12, Platos Fuertes 15,
 --     Bebidas 5, Postres 8) — el Excel no incluye tiempos de preparación.
 --   * precio de productos = 'Precio Sugerido (Redond.)' de la hoja Costeo.
---   * descripcion/imagen_url quedan vacías — no vienen en el Excel.
+--   * descripcion queda vacía — no viene en el Excel.
+--
+-- imagen_url (ingredientes y productos) apunta a archivos reales en
+-- server/public/images/{ingredientes,platos}/, servidos por Express en
+-- /images/... (ver server/src/app.ts). Vienen de DanyTacos.zip: los 46
+-- ingredientes tienen foto, pero de los 27 platos solo 21 — Arroz de la
+-- Casa, Birriamen, Chorimex, Guacajito, Quesotella y Taco de Birria quedan
+-- con imagen_url = '' por ahora, sin foto en ese zip.
 --
 -- NOTA: 'Taco Birria' y 'Taco de Birria' existen como dos filas casi idénticas en el Excel
 -- (mismo costeo, solo cambia la unidad de la tortilla). Se cargan ambas tal cual el Excel;
@@ -58,83 +65,83 @@ ON CONFLICT DO NOTHING;
 -- ── Ingredientes (catálogo real, 46 insumos) ────────────────────────────
 -- cantidad_actual es el stock inicial; los INSERTs en movimientos_inventario
 -- más abajo la decrementan automáticamente vía trg_aplicar_movimiento_inventario.
-INSERT INTO ingredientes (id_ingrediente, nombre, unidad_medida, tipo_control, cantidad_actual, cantidad_minima, disponible, activo) VALUES
-  ('8734b273-7646-5e83-a20d-dd48c3d80141', 'Carne de Res', '30 gr', 'cantidad', 32, 6, true, true),  -- ING01
-  ('fd7f613e-a726-51ff-ac20-995d3eaed436', 'Queso Doble Crema', '30 gr', 'cantidad', 50, 10, true, true),  -- ING02
-  ('f8f488d2-4aa9-5abb-b4a9-6334795adbb5', 'Queso Cheddar', 'unidad', 'cantidad', 45, 9, true, true),  -- ING03
-  ('c81b4551-002f-56aa-844c-33e535d20992', 'Chorizo', 'unidad', 'cantidad', 10, 2, true, true),  -- ING04
-  ('beedf3e5-ec34-5b98-a99a-3faf127c565e', 'Carne de Cerdo', '30 gr', 'cantidad', 32, 6, true, true),  -- ING05
-  ('00956175-921e-51ee-8647-26130c9593e5', 'Carne de Pollo', '30 gr', 'cantidad', 32, 6, true, true),  -- ING06
-  ('3e06fcf9-89eb-5c04-8189-4d6fbf250437', 'Chicharrón', '240 gr', 'cantidad', 27, 5, true, true),  -- ING07
-  ('acdcdcaa-be06-5b55-8fb0-c67acbe7d7a3', 'Tortilla de Maíz', 'unidad', 'cantidad', 32, 6, true, true),  -- ING08
-  ('c75b0db3-0e82-5db5-85ef-0b92789a863f', 'Tortilla de Harina', 'unidad', 'cantidad', 10, 2, true, true),  -- ING09
-  ('9626d440-01d8-5646-a2ce-1ceb93e882eb', 'Mazorca', 'unidad', 'cantidad', 5, 1, true, true),  -- ING10
-  ('4b851de7-2fc5-597e-8390-690a19ba980b', 'Pan Perro', 'paquete', 'cantidad', 5, 1, true, true),  -- ING11
-  ('cda5f767-b17c-5f4f-a94e-01f6157584bf', 'Papas Francesas', 'paquete', 'cantidad', 10, 2, true, true),  -- ING12
-  ('67f2ca47-9ca9-54c8-b7c5-7fcff84f1b8c', 'Aguacate', 'unidad', 'cantidad', 35, 7, true, true),  -- ING13
-  ('ce860f3d-1f05-588e-9183-d2b12bc57855', 'Mayonesa', '4 kilos', 'cantidad', 130, 26, true, true),  -- ING14
-  ('33f95efb-f631-517d-a8d5-7d27b1cb485c', 'Cebolla', 'libra', 'cantidad', 24, 5, true, true),  -- ING15
-  ('a1459bc5-05c6-5849-9ce0-c3e2329d4b18', 'Tomate', 'libra', 'cantidad', 5, 1, true, true),  -- ING16
-  ('247223ec-f117-520a-bbd5-d17d6aa1c70b', 'Piña en Almíbar', '30 gr', 'cantidad', 100, 20, true, true),  -- ING17
-  ('cbec4fe1-1008-5439-8c3a-908f39bb028a', 'Cilantro', 'unidad', 'cantidad', 10, 2, true, true),  -- ING18
-  ('13d06e6e-af36-5c4c-968c-bb4ea8167019', 'Tajín', 'porción', 'cantidad', 110, 22, true, true),  -- ING19
-  ('197c9183-25e1-57f2-85db-c14e38af1f4b', 'Limón', 'unidad', 'cantidad', 25, 5, true, true),  -- ING20
-  ('fcdad793-1b2f-5c31-bfad-56fedf2a4ad3', 'Aceite', 'porción', 'cantidad', 30, 6, true, true),  -- ING21
-  ('44190d6c-abe9-57ed-899a-d92720959c69', 'Chamoy', 'porción', 'cantidad', 30, 6, true, true),  -- ING22
-  ('0660a07c-1a4d-5846-81b1-d19d6eedfde8', 'Especias', 'porción', 'cantidad', 70, 14, true, true),  -- ING23
-  ('cc0c585e-4897-55fc-a640-9fe8c3fd728a', 'Mango', 'unidad', 'cantidad', 8, 2, true, true),  -- ING24
-  ('1b1e61ce-a7a2-52ee-8aa6-225cad285bd1', 'Nutella', 'porción', 'cantidad', 25, 5, true, true),  -- ING25
-  ('f0a52f32-4708-5cf0-8ef7-cb62644391b4', 'Arroz', 'porción', 'cantidad', 18, 4, true, true),  -- ING26
-  ('95aa96d4-8308-5c03-9ceb-cab129196e55', 'Frijol Negro', 'porción', 'cantidad', 30, 6, true, true),  -- ING27
-  ('95914e7b-2e64-530f-95ce-3665f3c488d2', 'Masa Empanada', 'unidad', 'cantidad', 15, 3, true, true),  -- ING28
-  ('659aaf3d-f2f9-5d9f-b767-0b50c11713f2', 'Camarón', 'porción', 'cantidad', 20, 4, true, true),  -- ING29
-  ('9708e25e-b3b8-5f3c-8c54-ea2db7a1159e', 'Panceta', 'porción', 'cantidad', 27, 5, true, true),  -- ING30
-  ('b56f69c9-3ee4-5d4a-af9a-11a483ce54eb', 'Pasta Ramen', 'porción', 'cantidad', 2, 1, true, true),  -- ING31
-  ('1369aaed-98f2-56ab-bf3b-95a699afc9df', 'Nachos', 'porción', 'cantidad', 15, 3, true, true),  -- ING32
-  ('1626df0d-6672-548e-8dc1-00b5b7fc59b6', 'Salsa Cheddar', 'porción', 'cantidad', 45, 9, true, true),  -- ING33
-  ('18295bda-ab79-591d-a144-f422def8aba1', 'Pan Artesanal', 'unidad', 'cantidad', 5, 1, true, true),  -- ING34
-  ('b51bf1a8-1ba7-5a14-98ee-7d4e9910af09', 'Salchicha', 'unidad', 'cantidad', 12, 2, true, true),  -- ING35
-  ('937295b5-ca49-5410-9925-9d3654c370e5', 'Doritos', 'porción', 'cantidad', 1, 1, true, true),  -- ING36
-  ('8fd61988-840e-5bf6-9d92-4518d53dc490', 'Churros', 'unidad', 'cantidad', 9, 2, true, true),  -- ING37
-  ('7a55cec5-2b91-563f-a016-26bfb025dac2', 'Helado', 'porción', 'cantidad', 14, 3, true, true),  -- ING38
-  ('49c60657-abdf-5990-b5c6-50fa1a54bf7b', 'Arequipe', 'porción', 'cantidad', 30, 6, true, true),  -- ING39
-  ('cc046fbb-c8b8-592c-a47f-310db3cc9cea', 'Alitas de Pollo', 'porción', 'cantidad', 12, 2, true, true),  -- ING40
-  ('8d817c4c-3e45-5689-b241-bf93ef93aea3', 'Pechuga', 'porción', 'cantidad', 4, 1, true, true),  -- ING41
-  ('615e6080-0f18-529e-a89c-0673ade72c3b', 'Jamaica', 'porción', 'cantidad', 3, 1, true, true),  -- ING42
-  ('1593e8fe-348f-57fd-ad26-ccf0c00af9ab', 'Azúcar', 'porción', 'cantidad', 30, 6, true, true),  -- ING43
-  ('e42d2680-e389-5780-a557-10ad442021c2', 'Ajonjolí', 'porción', 'cantidad', 30, 6, true, true),  -- ING44
-  ('2b6abef5-55b4-54a0-bcd5-cdc2886f06e0', 'Pimentón', 'unidad', 'cantidad', 15, 3, true, true),  -- ING45
-  ('290a36b0-94af-5377-8254-be1df37a0aa7', 'carne asada', 'unidad', 'cantidad', 4, 1, true, true)  -- ING46
+INSERT INTO ingredientes (id_ingrediente, nombre, unidad_medida, tipo_control, cantidad_actual, cantidad_minima, disponible, activo, imagen_url) VALUES
+  ('8734b273-7646-5e83-a20d-dd48c3d80141', 'Carne de Res', '30 gr', 'cantidad', 32, 6, true, true, '/images/ingredientes/carne-de-res.png'),  -- ING01
+  ('fd7f613e-a726-51ff-ac20-995d3eaed436', 'Queso Doble Crema', '30 gr', 'cantidad', 50, 10, true, true, '/images/ingredientes/queso-doble-crema.png'),  -- ING02
+  ('f8f488d2-4aa9-5abb-b4a9-6334795adbb5', 'Queso Cheddar', 'unidad', 'cantidad', 45, 9, true, true, '/images/ingredientes/queso-cheddar.png'),  -- ING03
+  ('c81b4551-002f-56aa-844c-33e535d20992', 'Chorizo', 'unidad', 'cantidad', 10, 2, true, true, '/images/ingredientes/chorizo.png'),  -- ING04
+  ('beedf3e5-ec34-5b98-a99a-3faf127c565e', 'Carne de Cerdo', '30 gr', 'cantidad', 32, 6, true, true, '/images/ingredientes/carne-de-cerdo.png'),  -- ING05
+  ('00956175-921e-51ee-8647-26130c9593e5', 'Carne de Pollo', '30 gr', 'cantidad', 32, 6, true, true, '/images/ingredientes/carne-de-pollo.png'),  -- ING06
+  ('3e06fcf9-89eb-5c04-8189-4d6fbf250437', 'Chicharrón', '240 gr', 'cantidad', 27, 5, true, true, '/images/ingredientes/chicharron.png'),  -- ING07
+  ('acdcdcaa-be06-5b55-8fb0-c67acbe7d7a3', 'Tortilla de Maíz', 'unidad', 'cantidad', 32, 6, true, true, '/images/ingredientes/tortilla-de-maiz.png'),  -- ING08
+  ('c75b0db3-0e82-5db5-85ef-0b92789a863f', 'Tortilla de Harina', 'unidad', 'cantidad', 10, 2, true, true, '/images/ingredientes/tortilla-de-harina.png'),  -- ING09
+  ('9626d440-01d8-5646-a2ce-1ceb93e882eb', 'Mazorca', 'unidad', 'cantidad', 5, 1, true, true, '/images/ingredientes/mazorca.png'),  -- ING10
+  ('4b851de7-2fc5-597e-8390-690a19ba980b', 'Pan Perro', 'paquete', 'cantidad', 5, 1, true, true, '/images/ingredientes/pan-perro.png'),  -- ING11
+  ('cda5f767-b17c-5f4f-a94e-01f6157584bf', 'Papas Francesas', 'paquete', 'cantidad', 10, 2, true, true, '/images/ingredientes/papas-francesas.png'),  -- ING12
+  ('67f2ca47-9ca9-54c8-b7c5-7fcff84f1b8c', 'Aguacate', 'unidad', 'cantidad', 35, 7, true, true, '/images/ingredientes/aguacate.png'),  -- ING13
+  ('ce860f3d-1f05-588e-9183-d2b12bc57855', 'Mayonesa', '4 kilos', 'cantidad', 130, 26, true, true, '/images/ingredientes/mayonesa.png'),  -- ING14
+  ('33f95efb-f631-517d-a8d5-7d27b1cb485c', 'Cebolla', 'libra', 'cantidad', 24, 5, true, true, '/images/ingredientes/cebolla.png'),  -- ING15
+  ('a1459bc5-05c6-5849-9ce0-c3e2329d4b18', 'Tomate', 'libra', 'cantidad', 5, 1, true, true, '/images/ingredientes/tomate.png'),  -- ING16
+  ('247223ec-f117-520a-bbd5-d17d6aa1c70b', 'Piña en Almíbar', '30 gr', 'cantidad', 100, 20, true, true, '/images/ingredientes/pina-en-almibar.png'),  -- ING17
+  ('cbec4fe1-1008-5439-8c3a-908f39bb028a', 'Cilantro', 'unidad', 'cantidad', 10, 2, true, true, '/images/ingredientes/cilantro.png'),  -- ING18
+  ('13d06e6e-af36-5c4c-968c-bb4ea8167019', 'Tajín', 'porción', 'cantidad', 110, 22, true, true, '/images/ingredientes/tajin.png'),  -- ING19
+  ('197c9183-25e1-57f2-85db-c14e38af1f4b', 'Limón', 'unidad', 'cantidad', 25, 5, true, true, '/images/ingredientes/limon.png'),  -- ING20
+  ('fcdad793-1b2f-5c31-bfad-56fedf2a4ad3', 'Aceite', 'porción', 'cantidad', 30, 6, true, true, '/images/ingredientes/aceite.png'),  -- ING21
+  ('44190d6c-abe9-57ed-899a-d92720959c69', 'Chamoy', 'porción', 'cantidad', 30, 6, true, true, '/images/ingredientes/chamoy.png'),  -- ING22
+  ('0660a07c-1a4d-5846-81b1-d19d6eedfde8', 'Especias', 'porción', 'cantidad', 70, 14, true, true, '/images/ingredientes/especias.png'),  -- ING23
+  ('cc0c585e-4897-55fc-a640-9fe8c3fd728a', 'Mango', 'unidad', 'cantidad', 8, 2, true, true, '/images/ingredientes/mango.png'),  -- ING24
+  ('1b1e61ce-a7a2-52ee-8aa6-225cad285bd1', 'Nutella', 'porción', 'cantidad', 25, 5, true, true, '/images/ingredientes/nutella.png'),  -- ING25
+  ('f0a52f32-4708-5cf0-8ef7-cb62644391b4', 'Arroz', 'porción', 'cantidad', 18, 4, true, true, '/images/ingredientes/arroz.png'),  -- ING26
+  ('95aa96d4-8308-5c03-9ceb-cab129196e55', 'Frijol Negro', 'porción', 'cantidad', 30, 6, true, true, '/images/ingredientes/frijol-negro.png'),  -- ING27
+  ('95914e7b-2e64-530f-95ce-3665f3c488d2', 'Masa Empanada', 'unidad', 'cantidad', 15, 3, true, true, '/images/ingredientes/masa-empanada.png'),  -- ING28
+  ('659aaf3d-f2f9-5d9f-b767-0b50c11713f2', 'Camarón', 'porción', 'cantidad', 20, 4, true, true, '/images/ingredientes/camaron.png'),  -- ING29
+  ('9708e25e-b3b8-5f3c-8c54-ea2db7a1159e', 'Panceta', 'porción', 'cantidad', 27, 5, true, true, '/images/ingredientes/panceta.png'),  -- ING30
+  ('b56f69c9-3ee4-5d4a-af9a-11a483ce54eb', 'Pasta Ramen', 'porción', 'cantidad', 2, 1, true, true, '/images/ingredientes/pasta-ramen.png'),  -- ING31
+  ('1369aaed-98f2-56ab-bf3b-95a699afc9df', 'Nachos', 'porción', 'cantidad', 15, 3, true, true, '/images/ingredientes/nachos.png'),  -- ING32
+  ('1626df0d-6672-548e-8dc1-00b5b7fc59b6', 'Salsa Cheddar', 'porción', 'cantidad', 45, 9, true, true, '/images/ingredientes/salsa-cheddar.png'),  -- ING33
+  ('18295bda-ab79-591d-a144-f422def8aba1', 'Pan Artesanal', 'unidad', 'cantidad', 5, 1, true, true, '/images/ingredientes/pan-artesanal.png'),  -- ING34
+  ('b51bf1a8-1ba7-5a14-98ee-7d4e9910af09', 'Salchicha', 'unidad', 'cantidad', 12, 2, true, true, '/images/ingredientes/salchicha.png'),  -- ING35
+  ('937295b5-ca49-5410-9925-9d3654c370e5', 'Doritos', 'porción', 'cantidad', 1, 1, true, true, '/images/ingredientes/doritos.png'),  -- ING36
+  ('8fd61988-840e-5bf6-9d92-4518d53dc490', 'Churros', 'unidad', 'cantidad', 9, 2, true, true, '/images/ingredientes/churros.png'),  -- ING37
+  ('7a55cec5-2b91-563f-a016-26bfb025dac2', 'Helado', 'porción', 'cantidad', 14, 3, true, true, '/images/ingredientes/helado.png'),  -- ING38
+  ('49c60657-abdf-5990-b5c6-50fa1a54bf7b', 'Arequipe', 'porción', 'cantidad', 30, 6, true, true, '/images/ingredientes/arequipe.png'),  -- ING39
+  ('cc046fbb-c8b8-592c-a47f-310db3cc9cea', 'Alitas de Pollo', 'porción', 'cantidad', 12, 2, true, true, '/images/ingredientes/alitas-de-pollo.png'),  -- ING40
+  ('8d817c4c-3e45-5689-b241-bf93ef93aea3', 'Pechuga', 'porción', 'cantidad', 4, 1, true, true, '/images/ingredientes/pechuga.png'),  -- ING41
+  ('615e6080-0f18-529e-a89c-0673ade72c3b', 'Jamaica', 'porción', 'cantidad', 3, 1, true, true, '/images/ingredientes/jamaica.png'),  -- ING42
+  ('1593e8fe-348f-57fd-ad26-ccf0c00af9ab', 'Azúcar', 'porción', 'cantidad', 30, 6, true, true, '/images/ingredientes/azucar.png'),  -- ING43
+  ('e42d2680-e389-5780-a557-10ad442021c2', 'Ajonjolí', 'porción', 'cantidad', 30, 6, true, true, '/images/ingredientes/ajonjoli.png'),  -- ING44
+  ('2b6abef5-55b4-54a0-bcd5-cdc2886f06e0', 'Pimentón', 'unidad', 'cantidad', 15, 3, true, true, '/images/ingredientes/pimenton.png'),  -- ING45
+  ('290a36b0-94af-5377-8254-be1df37a0aa7', 'carne asada', 'unidad', 'cantidad', 4, 1, true, true, '/images/ingredientes/carne-asada.png')  -- ING46
 ON CONFLICT DO NOTHING;
 
 -- ── Productos (27 platos, precio = Precio Sugerido de la hoja Costeo) ──
 INSERT INTO productos (id_producto, id_categoria, nombre, descripcion, precio, disponible, tiempo_preparacion_min, activo, imagen_url) VALUES
-  ('6a1d664b-c701-5907-956e-f1b5204c4c89', '6280f3ec-852b-58db-adc2-688cbfab895c', 'Alitas', '', 22500, true, 12, true, ''),
+  ('6a1d664b-c701-5907-956e-f1b5204c4c89', '6280f3ec-852b-58db-adc2-688cbfab895c', 'Alitas', '', 22500, true, 12, true, '/images/platos/alitas.png'),
   ('e8ee8359-efd4-5c58-9c48-9224e026827b', 'f8ef7307-7ed5-574c-8951-fb49e596d056', 'Arroz de la Casa', '', 17500, true, 15, true, ''),
   ('6c8cc269-2f43-5da5-9cd7-918a7873ec79', 'f8ef7307-7ed5-574c-8951-fb49e596d056', 'Birriamen', '', 18500, true, 15, true, ''),
-  ('32034cf8-c602-56f3-9d58-8976e6f6082b', 'f8ef7307-7ed5-574c-8951-fb49e596d056', 'Burrito', '', 30500, true, 15, true, ''),
-  ('735ef0ae-3e51-51e7-8bd2-7665a0718b4a', 'f8ef7307-7ed5-574c-8951-fb49e596d056', 'Carne Asada', '', 30000, true, 15, true, ''),
-  ('4439ef72-a361-5529-a69b-97992f677c9d', '6280f3ec-852b-58db-adc2-688cbfab895c', 'Chicharronada', '', 29500, true, 12, true, ''),
+  ('32034cf8-c602-56f3-9d58-8976e6f6082b', 'f8ef7307-7ed5-574c-8951-fb49e596d056', 'Burrito', '', 30500, true, 15, true, '/images/platos/burrito.png'),
+  ('735ef0ae-3e51-51e7-8bd2-7665a0718b4a', 'f8ef7307-7ed5-574c-8951-fb49e596d056', 'Carne Asada', '', 30000, true, 15, true, '/images/platos/carne-asada.png'),
+  ('4439ef72-a361-5529-a69b-97992f677c9d', '6280f3ec-852b-58db-adc2-688cbfab895c', 'Chicharronada', '', 29500, true, 12, true, '/images/platos/chicharronada.png'),
   ('f20dc4db-32ca-5bd2-a0db-2b97f8b00269', '6280f3ec-852b-58db-adc2-688cbfab895c', 'Chorimex', '', 25500, true, 12, true, ''),
-  ('aa3e8b7a-3374-5769-8e7d-519ce573ef32', 'cd762a21-6117-550d-ab6b-305ad012853b', 'Churro Loco', '', 9000, true, 8, true, ''),
-  ('f87f4bb7-f4b4-5f45-871d-d713c0827f3c', '6280f3ec-852b-58db-adc2-688cbfab895c', 'Dorilocos', '', 16500, true, 12, true, ''),
-  ('bdaf9d17-e7e6-5ec8-9f21-7874d68f2f3b', '6280f3ec-852b-58db-adc2-688cbfab895c', 'Empanada', '', 3500, true, 12, true, ''),
+  ('aa3e8b7a-3374-5769-8e7d-519ce573ef32', 'cd762a21-6117-550d-ab6b-305ad012853b', 'Churro Loco', '', 9000, true, 8, true, '/images/platos/churro-loco.png'),
+  ('f87f4bb7-f4b4-5f45-871d-d713c0827f3c', '6280f3ec-852b-58db-adc2-688cbfab895c', 'Dorilocos', '', 16500, true, 12, true, '/images/platos/dorilocos.png'),
+  ('bdaf9d17-e7e6-5ec8-9f21-7874d68f2f3b', '6280f3ec-852b-58db-adc2-688cbfab895c', 'Empanada', '', 3500, true, 12, true, '/images/platos/empanada.png'),
   ('b9a6b78a-fc39-56af-9a17-7de2857a72c3', '6280f3ec-852b-58db-adc2-688cbfab895c', 'Guacajito', '', 10500, true, 12, true, ''),
-  ('1bc8ecad-c884-55ea-8abf-797bd571d583', '6280f3ec-852b-58db-adc2-688cbfab895c', 'Guacamole', '', 4500, true, 12, true, ''),
-  ('50463f4b-78c1-5313-8714-7ed66788c5d8', 'f8ef7307-7ed5-574c-8951-fb49e596d056', 'Hamburguesa', '', 22500, true, 15, true, ''),
-  ('c6f2ee94-7ba2-5db2-b424-8e93b62d69a0', '6280f3ec-852b-58db-adc2-688cbfab895c', 'Mazorcada', '', 20000, true, 12, true, ''),
-  ('122548e4-846f-50a7-8d03-720dbc9abe50', '6280f3ec-852b-58db-adc2-688cbfab895c', 'Mega Nachos', '', 17500, true, 12, true, ''),
-  ('fe16067d-70c0-5aa9-aee0-5cefe5e20b53', '5b391907-4b26-598e-b478-43859363d0a9', 'Michelada de Mango', '', 8000, true, 5, true, ''),
-  ('99483d64-4f38-56c4-8120-08cdc280f94f', 'f8ef7307-7ed5-574c-8951-fb49e596d056', 'Pechuga Asada', '', 25000, true, 15, true, ''),
-  ('6ec15b93-0a19-5e08-ad10-36f8b602840b', 'f8ef7307-7ed5-574c-8951-fb49e596d056', 'Perro Caliente', '', 19500, true, 15, true, ''),
+  ('1bc8ecad-c884-55ea-8abf-797bd571d583', '6280f3ec-852b-58db-adc2-688cbfab895c', 'Guacamole', '', 4500, true, 12, true, '/images/platos/guacamole.png'),
+  ('50463f4b-78c1-5313-8714-7ed66788c5d8', 'f8ef7307-7ed5-574c-8951-fb49e596d056', 'Hamburguesa', '', 22500, true, 15, true, '/images/platos/hamburguesa.png'),
+  ('c6f2ee94-7ba2-5db2-b424-8e93b62d69a0', '6280f3ec-852b-58db-adc2-688cbfab895c', 'Mazorcada', '', 20000, true, 12, true, '/images/platos/mazorcada.png'),
+  ('122548e4-846f-50a7-8d03-720dbc9abe50', '6280f3ec-852b-58db-adc2-688cbfab895c', 'Mega Nachos', '', 17500, true, 12, true, '/images/platos/mega-nachos.png'),
+  ('fe16067d-70c0-5aa9-aee0-5cefe5e20b53', '5b391907-4b26-598e-b478-43859363d0a9', 'Michelada de Mango', '', 8000, true, 5, true, '/images/platos/michelada-de-mango.png'),
+  ('99483d64-4f38-56c4-8120-08cdc280f94f', 'f8ef7307-7ed5-574c-8951-fb49e596d056', 'Pechuga Asada', '', 25000, true, 15, true, '/images/platos/pechuga-asada.png'),
+  ('6ec15b93-0a19-5e08-ad10-36f8b602840b', 'f8ef7307-7ed5-574c-8951-fb49e596d056', 'Perro Caliente', '', 19500, true, 15, true, '/images/platos/perro-caliente.png'),
   ('f786999c-5d5b-55df-81fc-c17249fa72d6', 'cd762a21-6117-550d-ab6b-305ad012853b', 'Quesotella', '', 9500, true, 8, true, ''),
-  ('ffc2b534-b230-5c76-8c4a-6ce2100d34df', 'e9ea600b-197a-5df3-91d9-2f3c03963c4e', 'Taco Birria', '', 9000, true, 8, true, ''),
-  ('a896d95e-8c2d-5355-a095-3f756c19c931', 'e9ea600b-197a-5df3-91d9-2f3c03963c4e', 'Taco Camarón', '', 12500, true, 8, true, ''),
-  ('6639d352-a747-5919-8881-181c7e3527ee', 'e9ea600b-197a-5df3-91d9-2f3c03963c4e', 'Taco Chicharrón', '', 9500, true, 8, true, ''),
-  ('cd3035c4-ef90-508b-8171-f7b0325f9ba8', 'e9ea600b-197a-5df3-91d9-2f3c03963c4e', 'Taco Chorizo', '', 7500, true, 8, true, ''),
-  ('531f0fd3-e153-5250-92bf-5daa9e2383f3', 'e9ea600b-197a-5df3-91d9-2f3c03963c4e', 'Taco Cochinita', '', 5500, true, 8, true, ''),
-  ('b65aff3c-e7e2-5aa1-b3d3-0a8aec48b6c1', 'e9ea600b-197a-5df3-91d9-2f3c03963c4e', 'Taco Pastor', '', 5500, true, 8, true, ''),
-  ('b98b8ac7-6933-54c1-8ab7-9d1173f7f8d8', 'e9ea600b-197a-5df3-91d9-2f3c03963c4e', 'Taco Pollo', '', 5500, true, 8, true, ''),
+  ('ffc2b534-b230-5c76-8c4a-6ce2100d34df', 'e9ea600b-197a-5df3-91d9-2f3c03963c4e', 'Taco Birria', '', 9000, true, 8, true, '/images/platos/taco-birria.png'),
+  ('a896d95e-8c2d-5355-a095-3f756c19c931', 'e9ea600b-197a-5df3-91d9-2f3c03963c4e', 'Taco Camarón', '', 12500, true, 8, true, '/images/platos/taco-camaron.png'),
+  ('6639d352-a747-5919-8881-181c7e3527ee', 'e9ea600b-197a-5df3-91d9-2f3c03963c4e', 'Taco Chicharrón', '', 9500, true, 8, true, '/images/platos/taco-chicharron.png'),
+  ('cd3035c4-ef90-508b-8171-f7b0325f9ba8', 'e9ea600b-197a-5df3-91d9-2f3c03963c4e', 'Taco Chorizo', '', 7500, true, 8, true, '/images/platos/taco-chorizo.png'),
+  ('531f0fd3-e153-5250-92bf-5daa9e2383f3', 'e9ea600b-197a-5df3-91d9-2f3c03963c4e', 'Taco Cochinita', '', 5500, true, 8, true, '/images/platos/taco-cochinita.png'),
+  ('b65aff3c-e7e2-5aa1-b3d3-0a8aec48b6c1', 'e9ea600b-197a-5df3-91d9-2f3c03963c4e', 'Taco Pastor', '', 5500, true, 8, true, '/images/platos/taco-pastor.png'),
+  ('b98b8ac7-6933-54c1-8ab7-9d1173f7f8d8', 'e9ea600b-197a-5df3-91d9-2f3c03963c4e', 'Taco Pollo', '', 5500, true, 8, true, '/images/platos/taco-pollo.png'),
   ('926b822a-5f20-5bef-a19d-54a577117ca1', 'e9ea600b-197a-5df3-91d9-2f3c03963c4e', 'Taco de Birria', '', 8500, true, 8, true, '')
 ON CONFLICT DO NOTHING;
 

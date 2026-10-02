@@ -1,6 +1,7 @@
-import { Badge, Box, Switch, Table, Text } from "@chakra-ui/react";
+import { Badge, Box, Flex, Switch, Table, Text } from "@chakra-ui/react";
 import type { Ingrediente } from "../../types";
 import { useInventario } from "../../hooks/useInventario";
+import { resolveImageUrl } from "../../lib/images";
 
 interface TablaIngredientesProps {
   ingredientes: Ingrediente[];
@@ -15,6 +16,7 @@ export function TablaIngredientes({ ingredientes, onSeleccionar }: TablaIngredie
       <Table.Root size="sm">
         <Table.Header>
           <Table.Row bg="bg.inset">
+            <Table.ColumnHeader color="text.tertiary" w="44px" />
             <Table.ColumnHeader color="text.tertiary">Ingrediente</Table.ColumnHeader>
             <Table.ColumnHeader color="text.tertiary">Unidad</Table.ColumnHeader>
             <Table.ColumnHeader color="text.tertiary">Control</Table.ColumnHeader>
@@ -26,6 +28,7 @@ export function TablaIngredientes({ ingredientes, onSeleccionar }: TablaIngredie
         <Table.Body>
           {ingredientes.map((ing) => {
             const bajoMinimo = ing.tipo_control === "cantidad" && ing.cantidad_actual <= ing.cantidad_minima;
+            const imagen = resolveImageUrl(ing.imagen_url);
             return (
               <Table.Row
                 key={ing.id_ingrediente}
@@ -34,6 +37,15 @@ export function TablaIngredientes({ ingredientes, onSeleccionar }: TablaIngredie
                 _hover={{ bg: "bg.inset" }}
                 onClick={() => onSeleccionar(ing)}
               >
+                <Table.Cell>
+                  <Flex w="32px" h="32px" borderRadius="8px" bg="bg.inset" align="center" justify="center" overflow="hidden" fontSize="16px">
+                    {imagen ? (
+                      <img src={imagen} alt={ing.nombre} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                    ) : (
+                      "🥘"
+                    )}
+                  </Flex>
+                </Table.Cell>
                 <Table.Cell fontWeight="600">{ing.nombre}</Table.Cell>
                 <Table.Cell color="text.secondary">{ing.unidad_medida}</Table.Cell>
                 <Table.Cell>

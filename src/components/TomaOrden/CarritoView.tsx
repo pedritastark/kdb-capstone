@@ -2,6 +2,7 @@ import { Box, Button, Flex, IconButton, Input, NativeSelect, Text } from "@chakr
 import { FiArrowLeft, FiMinus, FiPlus, FiTrash2 } from "react-icons/fi";
 import type { ItemCarrito } from "../../pages/TomaOrdenPage";
 import type { MedioPago } from "../../types";
+import { resolveImageUrl } from "../../lib/images";
 import { MEDIO_PAGO_LABEL } from "../../utils/constants";
 import { formatoMoneda } from "../../utils/format";
 import { EMOJI_CATEGORIA } from "./shared";
@@ -56,7 +57,9 @@ export function CarritoView({
         )}
 
         <Flex direction="column" gap={3}>
-          {carrito.map(({ producto, cantidad }) => (
+          {carrito.map(({ producto, cantidad }) => {
+            const imagen = resolveImageUrl(producto.imagen_url);
+            return (
             <Flex
               key={producto.id_producto}
               bg="bg.surface"
@@ -67,8 +70,12 @@ export function CarritoView({
               gap={3}
               align="center"
             >
-              <Flex w="48px" h="48px" borderRadius="10px" bg="bg.inset" align="center" justify="center" fontSize="24px" flexShrink={0}>
-                {EMOJI_CATEGORIA[producto.id_categoria] ?? "🍽️"}
+              <Flex w="48px" h="48px" borderRadius="10px" bg="bg.inset" align="center" justify="center" fontSize="24px" flexShrink={0} overflow="hidden">
+                {imagen ? (
+                  <img src={imagen} alt={producto.nombre} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                ) : (
+                  EMOJI_CATEGORIA[producto.id_categoria] ?? "🍽️"
+                )}
               </Flex>
 
               <Box flex={1} minW={0}>
@@ -108,7 +115,8 @@ export function CarritoView({
                 </IconButton>
               </Flex>
             </Flex>
-          ))}
+            );
+          })}
         </Flex>
 
         {carrito.length > 0 && (

@@ -1,5 +1,6 @@
 import cors from "cors";
 import express from "express";
+import path from "node:path";
 import { errorHandler, notFoundHandler } from "./middleware/errorHandler";
 import { authRouter } from "./routes/auth.routes";
 import { categoriasRouter } from "./routes/categorias.routes";
@@ -19,6 +20,12 @@ export function createApp() {
     }),
   );
   app.use(express.json());
+
+  // Fotos de platos/ingredientes (server/public/images/...), públicas: las
+  // usan tanto el panel admin como /toma-orden. process.cwd() en vez de
+  // __dirname porque este archivo se compila a dist/src/app.js y __dirname
+  // cambiaría de nivel; npm run dev/start siempre corren con cwd = server/.
+  app.use("/images", express.static(path.join(process.cwd(), "public", "images")));
 
   app.get("/api/health", (_req, res) => res.json({ ok: true }));
 

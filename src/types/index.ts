@@ -157,6 +157,7 @@ export interface Ingrediente {
   cantidad_minima: number;
   disponible: boolean;
   activo: boolean;
+  imagen_url: string;
 }
 
 export interface ProductoIngrediente {

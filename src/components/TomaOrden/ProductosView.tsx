@@ -1,6 +1,7 @@
 import { Box, Flex, IconButton, Text } from "@chakra-ui/react";
 import { FiArrowLeft, FiMinus, FiPlus } from "react-icons/fi";
 import type { Categoria, Producto } from "../../types";
+import { resolveImageUrl } from "../../lib/images";
 import { formatoMoneda } from "../../utils/format";
 import { EMOJI_CATEGORIA, colorPorIndice } from "./shared";
 
@@ -70,6 +71,7 @@ export function ProductosView({
         <Flex direction="column" gap={3}>
           {productosCategoria.map((p) => {
             const cantidad = cantidadEnCarrito(p.id_producto);
+            const imagen = resolveImageUrl(p.imagen_url);
             return (
               <Flex
                 key={p.id_producto}
@@ -90,8 +92,13 @@ export function ProductosView({
                   justify="center"
                   fontSize="28px"
                   flexShrink={0}
+                  overflow="hidden"
                 >
-                  {EMOJI_CATEGORIA[p.id_categoria] ?? "🍽️"}
+                  {imagen ? (
+                    <img src={imagen} alt={p.nombre} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                  ) : (
+                    EMOJI_CATEGORIA[p.id_categoria] ?? "🍽️"
+                  )}
                 </Flex>
 
                 <Box flex={1} minW={0}>

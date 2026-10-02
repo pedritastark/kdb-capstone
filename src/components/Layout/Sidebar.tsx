@@ -14,6 +14,7 @@ import {
 import { useState } from "react";
 import { BRAND_GRADIENT } from "../../utils/constants";
 import { useAuth } from "../../hooks/useAuth";
+import logoDannyTacos from "../../assets/images/logo-danny-tacos.jpg";
 
 interface ItemNav {
   to: string;
@@ -72,35 +73,22 @@ export function Sidebar() {
       </Flex>
 
       <Flex direction="column" align="center" px={colapsado ? 0 : 4} pb={5} gap={2}>
-        <Flex
-          align="center"
-          justify="center"
-          w="52px"
-          h="52px"
+        <Box
+          w="130px"
+          h="130px"
           borderRadius="full"
-          bgImage="linear-gradient(135deg, var(--chakra-colors-pink-500), var(--chakra-colors-accent-500))"
-          color="black"
-          fontSize="26px"
+          overflow="hidden"
           flexShrink={0}
+          bgImage="linear-gradient(135deg, var(--chakra-colors-pink-500), var(--chakra-colors-accent-500))"
         >
-          🌮
-        </Flex>
+          <img
+            src={logoDannyTacos}
+            alt="Danny Tacos"
+            style={{ width: "100%", height: "100%", objectFit: "cover" }}
+          />
+        </Box>
         {!colapsado && (
           <Box textAlign="center">
-            <Text
-              fontFamily="heading"
-              letterSpacing="wide"
-              fontSize="lg"
-              lineHeight="1"
-              style={{
-                backgroundImage: "linear-gradient(90deg, #e6157d, #f97316, #38bdf8)",
-                WebkitBackgroundClip: "text",
-                backgroundClip: "text",
-                color: "transparent",
-              }}
-            >
-              DANNY TACOS
-            </Text>
             <Text fontSize="10px" color="accent.500" fontWeight="700" letterSpacing="wider" mt={1}>
               PANEL DE COCINA
             </Text>
