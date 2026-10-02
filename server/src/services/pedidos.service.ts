@@ -41,6 +41,8 @@ interface ItemInput {
   id_producto: string;
   cantidad: number;
   observaciones?: string;
+  /** ids de opciones_producto (tipo 'adicional', etc.) elegidas para esta línea */
+  opciones?: string[];
 }
 
 export interface CrearPedidoInput {
@@ -123,6 +125,7 @@ export async function crearPedido(
     precio_unitario: number;
     subtotal: number;
     observaciones: string;
+    opciones: { id_opcion: string; nombre_opcion: string; precio_adicional: number }[];
   }[] = [];
 
   for (const item of input.items) {
@@ -141,13 +144,35 @@ export async function crearPedido(
       throw new ApiError(400, `"${producto.nombre}" no está disponible en este momento`);
     }
     const precio_unitario = Number(producto.precio);
+
+    // Opciones (adicionales, etc.) elegidas — se releen y validan contra el
+    // producto, igual que el precio: nunca se confía en lo que mande el cliente.
+    const opciones: { id_opcion: string; nombre_opcion: string; precio_adicional: number }[] = [];
+    for (const idOpcion of item.opciones ?? []) {
+      const { rows: opcionRows } = await client.query<{
+        nombre: string;
+        precio_adicional: string;
+        disponible: boolean;
+      }>(
+        `SELECT nombre, precio_adicional, disponible FROM opciones_producto
+         WHERE id_opcion = $1 AND id_producto = $2`,
+        [idOpcion, item.id_producto],
+      );
+      const opcion = opcionRows[0];
+      if (!opcion) throw new ApiError(404, `Opción ${idOpcion} no existe para "${producto.nombre}"`);
+      if (!opcion.disponible) throw new ApiError(400, `"${opcion.nombre}" no está disponible en este momento`);
+      opciones.push({ id_opcion: idOpcion, nombre_opcion: opcion.nombre, precio_adicional: Number(opcion.precio_adicional) });
+    }
+
+    const precioConAdicionales = precio_unitario + opciones.reduce((s, o) => s + o.precio_adicional, 0);
     detalles.push({
       id_producto: item.id_producto,
       nombre_producto: producto.nombre,
       cantidad: item.cantidad,
       precio_unitario,
-      subtotal: precio_unitario * item.cantidad,
+      subtotal: precioConAdicionales * item.cantidad,
       observaciones: item.observaciones ?? "",
+      opciones,
     });
   }
 
@@ -179,12 +204,20 @@ export async function crearPedido(
   const pedido = pedidoRows[0];
 
   for (const d of detalles) {
-    await client.query(
+    const { rows: detalleRows } = await client.query<{ id_detalle: string }>(
       `INSERT INTO detalle_pedidos
          (id_pedido, id_producto, nombre_producto, cantidad, precio_unitario, subtotal, observaciones)
-       VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+       VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id_detalle`,
       [pedido.id_pedido, d.id_producto, d.nombre_producto, d.cantidad, d.precio_unitario, d.subtotal, d.observaciones],
     );
+    const id_detalle = detalleRows[0].id_detalle;
+    for (const o of d.opciones) {
+      await client.query(
+        `INSERT INTO detalle_opciones (id_detalle, id_opcion, nombre_opcion, precio_adicional)
+         VALUES ($1, $2, $3, $4)`,
+        [id_detalle, o.id_opcion, o.nombre_opcion, o.precio_adicional],
+      );
+    }
   }
 
   await client.query(

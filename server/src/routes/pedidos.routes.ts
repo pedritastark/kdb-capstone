@@ -53,6 +53,7 @@ const itemSchema = z.object({
   id_producto: z.string().uuid(),
   cantidad: z.number().int().positive(),
   observaciones: z.string().optional(),
+  opciones: z.array(z.string().uuid()).optional(),
 });
 
 const crearPedidoSchema = z.object({

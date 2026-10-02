@@ -91,9 +91,10 @@ productosRouter.patch(
   }),
 );
 
+// Pública: /toma-orden la usa para mostrar "qué trae" cada plato y dejar
+// quitar ingredientes al personalizar el pedido.
 productosRouter.get(
   "/:id/ingredientes",
-  requireAuth,
   asyncHandler(async (req, res) => {
     const { rows } = await pool.query(
       `SELECT i.*, pi.cantidad_requerida
