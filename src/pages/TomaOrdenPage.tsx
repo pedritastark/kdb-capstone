@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useSearchParams } from "react-router-dom";
-import { Box, Flex, Text } from "@chakra-ui/react";
+import { Box, Flex } from "@chakra-ui/react";
 import { useProductos } from "../hooks/useProductos";
 import { usePedidos } from "../hooks/usePedidos";
 import { ApiError } from "../lib/apiClient";
@@ -13,6 +13,7 @@ import { CarritoView } from "../components/TomaOrden/CarritoView";
 import { ConfirmacionView } from "../components/TomaOrden/ConfirmacionView";
 import { CartBar } from "../components/TomaOrden/CartBar";
 import { PersonalizarModal, type Personalizacion } from "../components/TomaOrden/PersonalizarModal";
+import logoDannyTacos from "../assets/images/logo-danny-tacos.jpg";
 import type { MedioPago, OpcionProducto, Producto, TipoEntrega } from "../types";
 
 export interface ItemCarrito {
@@ -172,38 +173,39 @@ export function TomaOrdenPage() {
     <Box minH="100vh" bg="bg.canvas">
       <Box maxW="480px" mx="auto" minH="100vh" bg="bg.canvas" position="relative">
         {vista !== "confirmacion" && (
-          <Flex
-            align="center"
-            justify="space-between"
+          <Box
+            display="grid"
+            gridTemplateColumns="1fr auto 1fr"
+            alignItems="center"
             px={5}
-            py={3}
-            bg="bg.surface"
-            borderBottom="1px solid"
-            borderColor="border.subtle"
+            py={2}
+            bg="bg.canvas"
             position="sticky"
             top={0}
             zIndex={10}
           >
-            <Flex align="center" gap={2}>
-              <Text fontSize="lg">🌮</Text>
-              <Text fontFamily="heading" letterSpacing="wide" fontSize="md" color="white">
-                DANNY TACOS
-              </Text>
+            <Box />
+            <img
+              src={logoDannyTacos}
+              alt="Danny Tacos"
+              style={{ height: "100px", width: "100px", borderRadius: "9999px", objectFit: "cover" }}
+            />
+            <Flex justify="flex-end">
+              <Flex
+                align="center"
+                gap={1}
+                bg="bg.inset"
+                px={3}
+                py={1}
+                borderRadius="full"
+                fontSize="xs"
+                fontWeight="700"
+                color="accent.500"
+              >
+                {tipoEntrega === "mesa" ? `Mesa #${mesa}` : "🛵 Domicilio"}
+              </Flex>
             </Flex>
-            <Flex
-              align="center"
-              gap={1}
-              bg="bg.inset"
-              px={3}
-              py={1}
-              borderRadius="full"
-              fontSize="xs"
-              fontWeight="700"
-              color="accent.500"
-            >
-              {tipoEntrega === "mesa" ? `Mesa #${mesa}` : "🛵 Domicilio"}
-            </Flex>
-          </Flex>
+          </Box>
         )}
 
         {vista === "categorias" && (
