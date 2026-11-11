@@ -76,6 +76,7 @@ export const TIPO_NOTIFICACION_LABEL: Record<TipoNotificacion, string> = {
   inventario_bajo: "Inventario bajo",
   pedido_listo: "Pedido listo",
   cancelacion: "Cancelación",
+  solicitud_asesor: "Cliente pide ayuda",
 };
 
 export const TIPO_NOTIFICACION_COLOR: Record<TipoNotificacion, string> = {
@@ -84,6 +85,7 @@ export const TIPO_NOTIFICACION_COLOR: Record<TipoNotificacion, string> = {
   inventario_bajo: "#ef4444",
   pedido_listo: "#10b981",
   cancelacion: "#ef4444",
+  solicitud_asesor: "#a855f7",
 };
 
 export const NUEVO_PEDIDO_MINUTOS = 2;

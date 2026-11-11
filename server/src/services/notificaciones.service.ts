@@ -8,7 +8,8 @@ export type TipoNotificacion =
   | "pago_reportado"
   | "inventario_bajo"
   | "pedido_listo"
-  | "cancelacion";
+  | "cancelacion"
+  | "solicitud_asesor";
 
 export async function crearNotificacion(
   db: Queryable,

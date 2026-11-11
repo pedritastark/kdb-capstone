@@ -29,6 +29,8 @@ services:
         value: production
       - key: FRONTEND_ORIGIN
         sync: false # se completa a mano con la URL real del static site una vez creado
+      - key: LOCAL_DIRECCION
+        sync: false # dirección del local que el chatbot da a quien pasa a recoger (ej. "Calle 10 # 5-20, Laureles")
 
   - type: web
     name: dannytacos-frontend

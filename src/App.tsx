@@ -17,6 +17,8 @@ import { ClientesPage } from "./pages/ClientesPage";
 import { PagosPage } from "./pages/PagosPage";
 import { NotificacionesPage } from "./pages/NotificacionesPage";
 import { TomaOrdenPage } from "./pages/TomaOrdenPage";
+import { ChatbotPage } from "./pages/ChatbotPage";
+import { LandingPage } from "./pages/LandingPage";
 
 function Providers({ children }: { children: ReactNode }) {
   return (
@@ -40,8 +42,10 @@ function App() {
   return (
     <Providers>
       <Routes>
+        <Route path="/" element={<LandingPage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/toma-orden" element={<TomaOrdenPage />} />
+        <Route path="/chat" element={<ChatbotPage />} />
         <Route
           element={
             <RutaProtegida>
@@ -49,7 +53,6 @@ function App() {
             </RutaProtegida>
           }
         >
-          <Route path="/" element={<Navigate to="/pedidos" replace />} />
           <Route path="/pedidos" element={<PedidosPage />} />
           <Route path="/menu" element={<MenuPage />} />
           <Route path="/inventario" element={<InventarioPage />} />
