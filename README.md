@@ -1,3 +1,35 @@
+# Danny Tacos
+
+Sistema de gestión para la taquería Danny Tacos: panel de cocina/caja, autopedido
+en mesa (`/toma-orden`), chatbot de pedidos a domicilio y para recoger (`/chat`)
+y landing con acceso por WhatsApp (`/`).
+
+## Correr todo en local con Docker
+
+Requiere Docker con Compose. Levanta Postgres, la API y el frontend:
+
+```bash
+docker compose up --build
+```
+
+| Qué | URL |
+| --- | --- |
+| Landing | http://localhost:5173 |
+| Chatbot | http://localhost:5173/chat |
+| Panel del personal | http://localhost:5173/login |
+| API | http://localhost:3001/api/health |
+
+Al arrancar, la API aplica las migraciones y carga los datos demo (menú y
+usuarios; se desactiva con `SEED: "false"` en `docker-compose.yml`).
+
+- Parar: `docker compose down` (conserva la base). Borrarla: `docker compose down -v`.
+- Dirección del local para quien recoge: `LOCAL_DIRECCION="..." docker compose up`.
+- Si cambias el código, vuelve a correr con `--build`.
+- `VITE_API_URL` se incrusta al compilar el frontend; si expones la API en otra
+  URL, cámbiala en `docker-compose.yml` (`web.build.args`) y reconstruye.
+
+---
+
 # React + TypeScript + Vite
 
 This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.

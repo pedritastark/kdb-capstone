@@ -1,0 +1,52 @@
+# Danny Tacos completo en local:  docker compose up --build
+#   Frontend  http://localhost:5173   (landing en /, chatbot en /chat, panel en /login)
+#   API       http://localhost:3001/api/health
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: dannytacos
+      POSTGRES_PASSWORD: dannytacos
+      POSTGRES_DB: dannytacos
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U dannytacos -d dannytacos"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+
+  api:
+    build:
+      context: .
+      dockerfile: server/Dockerfile
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgres://dannytacos:dannytacos@db:5432/dannytacos?sslmode=disable
+      JWT_SECRET: dev-secret-cambiame
+      FRONTEND_ORIGIN: http://localhost:5173
+      PORT: "3001"
+      SEED: "true" # carga el menú y usuarios demo (poner "false" para no sembrar)
+      LOCAL_DIRECCION: "${LOCAL_DIRECCION:-Calle 10 # 5-20, Laureles}"
+    ports:
+      - "3001:3001"
+
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile.web
+      args:
+        VITE_API_URL: http://localhost:3001
+        VITE_WHATSAPP_URL: ${VITE_WHATSAPP_URL:-}
+        VITE_LOCAL_DIRECCION: ${VITE_LOCAL_DIRECCION:-}
+        VITE_TELEFONO: ${VITE_TELEFONO:-}
+        VITE_HORARIO: ${VITE_HORARIO:-}
+    depends_on:
+      - api
+    ports:
+      - "5173:80"
+
+volumes:
+  pgdata:

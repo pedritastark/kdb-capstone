@@ -13,7 +13,7 @@ async function main() {
 
   const pool = new Pool({
     connectionString: databaseUrl,
-    ssl: databaseUrl.includes("localhost") ? false : { rejectUnauthorized: false },
+    ssl: /localhost|sslmode=disable/.test(databaseUrl) ? false : { rejectUnauthorized: false },
   });
 
   const migrationsDir = path.join(__dirname, "..", "..", "migrations");

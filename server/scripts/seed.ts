@@ -15,7 +15,7 @@ async function main() {
 
   const pool = new Pool({
     connectionString: databaseUrl,
-    ssl: databaseUrl.includes("localhost") ? false : { rejectUnauthorized: false },
+    ssl: /localhost|sslmode=disable/.test(databaseUrl) ? false : { rejectUnauthorized: false },
   });
 
   const seedPath = path.join(__dirname, "..", "..", "migrations", "0007_seed_data.sql");
