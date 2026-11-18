@@ -6,6 +6,7 @@ import { authRouter } from "./routes/auth.routes";
 import { categoriasRouter } from "./routes/categorias.routes";
 import { chatbotRouter } from "./routes/chatbot.routes";
 import { clientesRouter } from "./routes/clientes.routes";
+import { imagenesRouter } from "./routes/imagenes.routes";
 import { inventarioRouter } from "./routes/inventario.routes";
 import { notificacionesRouter } from "./routes/notificaciones.routes";
 import { pagosRouter } from "./routes/pagos.routes";
@@ -45,6 +46,7 @@ export function createApp() {
   app.use("/api/pagos", pagosRouter);
   app.use("/api/notificaciones", notificacionesRouter);
   app.use("/api/chatbot", chatbotRouter); // público: lo usa /chat
+  app.use("/api/imagenes", imagenesRouter); // GET público, POST requiere sesión
 
   app.use(notFoundHandler);
   app.use(errorHandler);
