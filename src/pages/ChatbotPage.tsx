@@ -1,7 +1,9 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Box, Button, Flex, Input, Text } from "@chakra-ui/react";
 import { FiSend } from "react-icons/fi";
+import { useLocation } from "react-router-dom";
 import { ApiError, apiClient } from "../lib/apiClient";
+import { vaciarCarritoGuardado } from "../lib/carrito";
 import logoDannyTacos from "../assets/images/logo-danny-tacos.jpg";
 
 interface Opcion {
@@ -41,6 +43,10 @@ export function ChatbotPage() {
   const siguienteId = useRef(0);
   const fondoRef = useRef<HTMLDivElement>(null);
   const iniciado = useRef(false);
+  // Pedido armado en la landing (viene en el state de la navegación): solo se
+  // manda en el primer mensaje; el servidor lo valida y relee precios.
+  const location = useLocation();
+  const pedidoInicial = useRef<unknown>((location.state as { pedido?: unknown } | null)?.pedido);
 
   const agregar = useCallback((de: Burbuja["de"], textos: string[]) => {
     setBurbujas((prev) => [...prev, ...textos.map((t) => ({ id: siguienteId.current++, de, texto: t }))]);
@@ -54,7 +60,9 @@ export function ChatbotPage() {
         const r = await apiClient.post<RespuestaBot>("/chatbot/mensaje", {
           estado: respuesta?.estado,
           texto: valor,
+          pedido: respuesta ? undefined : pedidoInicial.current,
         });
+        if (r.finalizado) vaciarCarritoGuardado();
         agregar("bot", r.mensajes);
         setRespuesta(r);
         setMarcadas(new Set());

@@ -1,61 +1,66 @@
-# Deploy en Render
+# Deploy: Render (API + frontend) y Supabase (base de datos)
 
-Este repo trae `render.yaml` con los 3 recursos que necesita el sistema:
-- `dannytacos-db` — Postgres administrado.
-- `dannytacos-api` — el backend (`/server`), como Web Service.
-- `dannytacos-frontend` — el frontend (Vite), como Static Site.
+- **Base de datos** — Postgres en **Supabase**. No vive en Render.
+- `dannytacos-api` — el backend (`/server`), Web Service en Render.
+- `dannytacos-frontend` — el frontend (Vite), Static Site en Render.
 
-No tengo acceso a la cuenta de Render del equipo, así que estos pasos hay que
-correrlos a mano desde el dashboard (una sola vez):
+`render.yaml` describe los dos servicios de Render (no declara ninguna base).
 
-## 1. Crear los servicios desde el Blueprint
+## 1. Base de datos en Supabase (una sola vez)
 
-1. Sube este repo a GitHub (si no está ya).
-2. En Render: **New → Blueprint**.
-3. Selecciona el repo `kdb-capstone`. Render va a leer `render.yaml` y proponer
-   crear los 3 recursos de arriba. Confirma.
-4. Render generará solo `JWT_SECRET` automáticamente (`generateValue: true`) y
-   conectará `DATABASE_URL` sola (`fromDatabase`). Los otros dos valores
-   (`FRONTEND_ORIGIN` en la API y `VITE_API_URL` en el frontend) quedan en
-   blanco a propósito — necesitan la URL del otro servicio, que Render solo
-   asigna después de crearlos.
+1. Crea el proyecto en Supabase y guarda la contraseña de la base.
+2. Crea el esquema y carga el catálogo. Opciones:
+   - **SQL Editor** de Supabase: pega `supabase/setup.sql` y ejecútalo (base vacía).
+     Se regenera con `cd server && npm run bundle-sql`.
+   - o desde tu máquina: `DATABASE_URL=<cadena> npm run migrate` y luego `npm run seed`
+     (en `server/`).
+3. El esquema activa **RLS en todas las tablas** (`migrations/0012_enable_rls.sql`).
+   Es necesario: Supabase expone `public` por una API REST pública (clave `anon`),
+   y sin RLS cualquiera podría leer `usuarios` (hashes de contraseña) o modificar
+   pedidos. La API propia conecta como dueño de las tablas y se salta RLS.
+   Si creas una tabla nueva, actívale RLS a mano.
+4. **Cambia las contraseñas del seed** (`danny2026` para admin/cocina/caja) antes de
+   usarlo en serio: están en el repo.
 
-## 2. Completar las URLs cruzadas
+### Cadena de conexión (`DATABASE_URL`)
 
-Una vez que ambos servicios existan y tengan su URL `https://dannytacos-api-xxxx.onrender.com`
-y `https://dannytacos-frontend-xxxx.onrender.com`:
+Usa la del **Session pooler** (Supabase → **Connect → Session pooler**), con usuario
+`postgres.<ref-del-proyecto>`. **No uses la conexión directa**: en el plan gratuito es
+solo IPv6 y Render es IPv4, así que la API no conectaría.
 
-1. En **dannytacos-api → Environment**, setea `FRONTEND_ORIGIN` con la URL del
-   frontend (sin `/` al final).
-2. En **dannytacos-frontend → Environment**, setea `VITE_API_URL` con la URL
-   del backend (sin `/` al final).
-3. Ambos servicios se re-despliegan solos al guardar el cambio de variable.
+## 2. Crear los servicios en Render
+
+1. Render: **New → Blueprint** (o la herramienta MCP `create_blueprint`) y elige este repo.
+2. Render generará solo `JWT_SECRET` (`generateValue: true`). Las variables `sync: false`
+   se piden/rellenan a mano:
+
+| Servicio | Variable | Valor |
+| --- | --- | --- |
+| API | `DATABASE_URL` | cadena del Session pooler de Supabase |
+| API | `FRONTEND_ORIGIN` | URL del frontend, sin `/` final |
+| API | `LOCAL_DIRECCION` | dirección del local que dice el chatbot a quien recoge |
+| Frontend | `VITE_API_URL` | URL de la API, sin `/` final |
+| Frontend | `VITE_LOCAL_DIRECCION`, `VITE_TELEFONO`, `VITE_HORARIO` | datos de la landing (opcionales; lo vacío no se muestra) |
+| Frontend | `VITE_WHATSAPP_URL` | ej. `https://wa.me/57300…`; vacío = el botón lleva al chat web |
+
+`FRONTEND_ORIGIN` y `VITE_API_URL` dependen de la URL del otro servicio, que Render solo
+asigna al crearlos: se completan después y ambos servicios se redespliegan solos.
 
 ## 3. Verificar
 
-1. `GET https://dannytacos-api-xxxx.onrender.com/api/health` → `{"ok":true}`.
-2. El build (`npm run migrate`, al final de `buildCommand` — el plan free no
-   soporta `preDeployCommand`) ya corrió el esquema completo
-   (`migrations/0001..0010`, sin el seed) contra `dannytacos-db` — confírmalo
-   viendo el log del deploy.
-3. Abre el frontend, intenta iniciar sesión — sin usuarios todavía va a
-   fallar porque la base está vacía (ver paso 4).
+1. `GET <url-api>/api/health` → `{"ok":true}`.
+2. El build de la API corre `npm run migrate` (el plan free no soporta
+   `preDeployCommand`). Es idempotente: con la base ya creada solo imprime
+   "ya aplicada" por cada migración.
+3. Abre el frontend: la landing carga el menú; `/chat` y `/login` funcionan al recargar
+   (el Static Site reescribe `/*` a `/index.html`).
 
-## 4. Cargar datos de ejemplo (opcional, solo una vez)
+## 4. CORS
 
-El seed (`migrations/0007_seed_data.sql`, con el catálogo real de 27 platos y
-usuarios de prueba) **no se aplica automáticamente** en cada deploy — es una
-decisión deliberada para no reinsertar clientes/pedidos de demo en una base
-de producción real cada vez que se despliega. Para cargarlo la primera vez:
+El backend solo acepta peticiones desde `FRONTEND_ORIGIN`. Si el frontend se sirve desde
+otro dominio, actualiza esa variable también.
 
-1. En **dannytacos-api → Shell** (consola integrada de Render).
-2. Corre: `npm run seed`
-3. Ya puedes iniciar sesión con `admin@dannytacos.com` / `danny2026` (ver el
-   comentario en `migrations/0007_seed_data.sql` para los otros usuarios de
-   prueba — cambia esa contraseña antes de usar esto en un entorno real).
+## Plan gratuito de Render
 
-## 5. CORS
-
-El backend solo acepta peticiones desde `FRONTEND_ORIGIN` (configurado en el
-paso 2). Si el frontend se sirve desde otro dominio (ej. un dominio propio
-conectado después), hay que actualizar esa variable también.
+El Web Service se duerme tras 15 min sin tráfico: la primera petición tarda unos segundos
+(la landing lo avisa con "Cargando el menú…"). Las horas gratuitas son por workspace.

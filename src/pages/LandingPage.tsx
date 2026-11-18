@@ -1,9 +1,15 @@
-import type { ReactNode } from "react";
-import { Link as RouterLink } from "react-router-dom";
+import { useState, type ReactNode } from "react";
+import { Link as RouterLink, useNavigate } from "react-router-dom";
 import { Box, Flex, Grid, Text } from "@chakra-ui/react";
 import { FaWhatsapp } from "react-icons/fa";
 import { FiClock, FiMapPin, FiNavigation, FiPhone } from "react-icons/fi";
 import { NEGOCIO, soloDigitos, urlComoLlegar, urlMapaEmbed } from "../config/negocio";
+import { useCarritoLanding } from "../hooks/useCarritoLanding";
+import { itemsParaApi, mensajeWhatsApp, urlWhatsAppConPedido } from "../lib/carrito";
+import { formatoMoneda } from "../utils/format";
+import { NavbarLanding } from "../components/Landing/NavbarLanding";
+import { MenuSeccion } from "../components/Landing/MenuSeccion";
+import { CarritoDrawer } from "../components/Landing/CarritoDrawer";
 import logoDannyTacos from "../assets/images/logo-danny-tacos.jpg";
 
 const VERDE_WHATSAPP = "#25D366";
@@ -21,8 +27,8 @@ const DESTACADOS: { img: string; nombre: string; pos?: string }[] = [
 ];
 
 const PASOS = [
-  { n: "1", titulo: "Escríbenos", texto: "Abre el chat y dinos tu número. Si ya pediste antes, te reconocemos." },
-  { n: "2", titulo: "Arma tu pedido", texto: "Elige tus tacos y antojitos, quita ingredientes o agrega extras." },
+  { n: "1", titulo: "Arma tu pedido", texto: "Elige del menú, quita ingredientes o agrega extras y cambia cantidades." },
+  { n: "2", titulo: "Haz la orden", texto: "Te llevamos a WhatsApp con tu pedido ya escrito: solo faltan tus datos." },
   { n: "3", titulo: "Recíbelo o recógelo", texto: "A tu puerta sin costo, o pasa por él al local. Pagas al recibir." },
 ];
 
@@ -66,7 +72,7 @@ function BotonWhatsApp({ grande = false, etiqueta = "Pedir por WhatsApp" }: { gr
 
 function Seccion({ id, titulo, subtitulo, children }: { id?: string; titulo: string; subtitulo?: string; children: ReactNode }) {
   return (
-    <Box as="section" id={id} px={{ base: 5, md: 8 }} py={{ base: 12, md: 20 }} maxW="1100px" mx="auto" w="full">
+    <Box as="section" id={id} scrollMarginTop="64px" px={{ base: 5, md: 8 }} py={{ base: 12, md: 20 }} maxW="1100px" mx="auto" w="full">
       <Text fontFamily="heading" letterSpacing="wide" color="white" fontSize={{ base: "3xl", md: "4xl" }} textAlign="center">
         {titulo}
       </Text>
@@ -110,11 +116,33 @@ function DatoContacto({ icono, titulo, children }: { icono: ReactNode; titulo: s
 
 export function LandingPage() {
   const { direccion, telefono, horario } = NEGOCIO;
+  const navigate = useNavigate();
+  const carrito = useCarritoLanding();
+  const [carritoAbierto, setCarritoAbierto] = useState(false);
+
+  const verMenu = () => {
+    setCarritoAbierto(false);
+    document.getElementById("menu")?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  // "Hacer orden": con WhatsApp configurado se abre con el pedido ya escrito;
+  // si no, se sigue en el chat web con el carrito precargado (el bot solo pide
+  // lo que falta: teléfono, nombre, entrega, dirección y pago).
+  const hacerOrden = () => {
+    if (!carrito.lineas.length) return;
+    if (NEGOCIO.whatsappUrl) {
+      window.open(urlWhatsAppConPedido(NEGOCIO.whatsappUrl, mensajeWhatsApp(carrito.lineas)), "_blank", "noopener,noreferrer");
+      return;
+    }
+    navigate("/chat", { state: { pedido: itemsParaApi(carrito.lineas) } });
+  };
 
   return (
     <Box bg="bg.canvas" minH="100dvh">
+      <NavbarLanding cantidadCarrito={carrito.cantidad} onAbrirCarrito={() => setCarritoAbierto(true)} />
+
       {/* ── Hero ───────────────────────────────────────────── */}
-      <Box as="header" position="relative" minH={{ base: "88dvh", md: "92dvh" }} overflow="hidden">
+      <Box as="header" id="inicio" position="relative" minH={{ base: "84dvh", md: "88dvh" }} overflow="hidden">
         <img
           src="/landing/taco-birria.jpg"
           alt="Tacos de birria con queso gratinado y consomé"
@@ -132,7 +160,7 @@ export function LandingPage() {
           align="center"
           justify="center"
           textAlign="center"
-          minH={{ base: "88dvh", md: "92dvh" }}
+          minH={{ base: "84dvh", md: "88dvh" }}
           px={6}
           py={12}
           maxW="820px"
@@ -174,7 +202,7 @@ export function LandingPage() {
               fontSize="lg"
               _hover={{ bg: "whiteAlpha.200" }}
             >
-              <a href="#destacados">Ver platos</a>
+              <a href="#menu">Ver el menú</a>
             </Box>
           </Flex>
           <Text color="whiteAlpha.800" fontSize="sm" mt={5}>
@@ -212,13 +240,34 @@ export function LandingPage() {
           ))}
         </Grid>
         <Flex justify="center" mt={10}>
-          <BotonWhatsApp etiqueta="Pedir ahora" />
+          <Box
+            asChild
+            display="inline-flex"
+            alignItems="center"
+            justifyContent="center"
+            h="52px"
+            px={8}
+            borderRadius="full"
+            bg="accent.500"
+            color="black"
+            fontWeight="700"
+            _hover={{ bg: "accent.400" }}
+          >
+            <a href="#menu">Ver el menú completo y armar mi pedido</a>
+          </Box>
         </Flex>
       </Seccion>
 
-      {/* ── Cómo pedir ─────────────────────────────────────── */}
+      {/* ── Menú + carrito ─────────────────────────────────── */}
       <Box bg="bg.surface" borderY="1px solid" borderColor="border.subtle">
-        <Seccion titulo="PEDIR ES FÁCIL" subtitulo="Sin apps ni llamadas: todo por chat.">
+        <Seccion id="menu" titulo="NUESTRO MENÚ" subtitulo="Elige, personaliza y arma tu pedido. Al final lo mandamos directo a WhatsApp.">
+          <MenuSeccion onAgregar={carrito.agregar} />
+        </Seccion>
+      </Box>
+
+      {/* ── Cómo pedir ─────────────────────────────────────── */}
+      <Box>
+        <Seccion titulo="PEDIR ES FÁCIL" subtitulo="Sin apps ni llamadas: tu pedido sale de aquí listo.">
           <Grid templateColumns={{ base: "1fr", md: "repeat(3, 1fr)" }} gap={5}>
             {PASOS.map((p) => (
               <Flex key={p.n} direction="column" align="center" textAlign="center" gap={2} px={2}>
@@ -306,35 +355,73 @@ export function LandingPage() {
         </Box>
       </Box>
 
-      {/* ── WhatsApp flotante (siempre visible) ────────────── */}
-      <Box
-        asChild
-        position="fixed"
-        right={{ base: 4, md: 6 }}
-        bottom={{ base: 4, md: 6 }}
-        zIndex={20}
-        w="60px"
-        h="60px"
-        borderRadius="full"
-        bg={VERDE_WHATSAPP}
-        color="white"
-        display="flex"
-        alignItems="center"
-        justifyContent="center"
-        boxShadow="0 8px 24px rgba(0,0,0,0.45)"
-        _hover={{ transform: "scale(1.06)" }}
-        transition="transform 0.15s"
-      >
-        {NEGOCIO.whatsappUrl ? (
-          <a href={NEGOCIO.whatsappUrl} target="_blank" rel="noopener noreferrer" aria-label="Pedir por WhatsApp">
-            <FaWhatsapp size={34} />
-          </a>
-        ) : (
-          <RouterLink to="/chat" aria-label="Pedir por WhatsApp">
-            <FaWhatsapp size={34} />
-          </RouterLink>
-        )}
-      </Box>
+      {/* ── Botón flotante: "Ver mi pedido" si hay productos, WhatsApp si no ── */}
+      {carrito.cantidad > 0 ? (
+        <Box
+          as="button"
+          onClick={() => setCarritoAbierto(true)}
+          position="fixed"
+          right={{ base: 4, md: 6 }}
+          bottom={{ base: 4, md: 6 }}
+          zIndex={20}
+          h="60px"
+          px={6}
+          borderRadius="full"
+          bg={VERDE_WHATSAPP}
+          color="white"
+          display="flex"
+          alignItems="center"
+          gap={3}
+          fontWeight="700"
+          boxShadow="0 8px 24px rgba(0,0,0,0.45)"
+          _hover={{ transform: "scale(1.03)" }}
+          transition="transform 0.15s"
+        >
+          🛒 Ver mi pedido ({carrito.cantidad}) · {formatoMoneda(carrito.total)}
+        </Box>
+      ) : (
+        <Box
+          asChild
+          position="fixed"
+          right={{ base: 4, md: 6 }}
+          bottom={{ base: 4, md: 6 }}
+          zIndex={20}
+          w="60px"
+          h="60px"
+          borderRadius="full"
+          bg={VERDE_WHATSAPP}
+          color="white"
+          display="flex"
+          alignItems="center"
+          justifyContent="center"
+          boxShadow="0 8px 24px rgba(0,0,0,0.45)"
+          _hover={{ transform: "scale(1.06)" }}
+          transition="transform 0.15s"
+        >
+          {NEGOCIO.whatsappUrl ? (
+            <a href={NEGOCIO.whatsappUrl} target="_blank" rel="noopener noreferrer" aria-label="Pedir por WhatsApp">
+              <FaWhatsapp size={34} />
+            </a>
+          ) : (
+            <RouterLink to="/chat" aria-label="Pedir por WhatsApp">
+              <FaWhatsapp size={34} />
+            </RouterLink>
+          )}
+        </Box>
+      )}
+
+      <CarritoDrawer
+        abierto={carritoAbierto}
+        onCerrar={() => setCarritoAbierto(false)}
+        lineas={carrito.lineas}
+        total={carrito.total}
+        porWhatsApp={!!NEGOCIO.whatsappUrl}
+        onCambiarCantidad={carrito.cambiarCantidad}
+        onQuitar={carrito.quitar}
+        onVaciar={carrito.vaciar}
+        onHacerOrden={hacerOrden}
+        onVerMenu={verMenu}
+      />
     </Box>
   );
 }

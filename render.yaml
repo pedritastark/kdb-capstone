@@ -1,9 +1,5 @@
-databases:
-  - name: dannytacos-db
-    plan: free
-    databaseName: dannytacos
-    user: dannytacos
-
+# La base de datos NO vive en Render: es Postgres en Supabase (ver DEPLOY.md).
+# Por eso este archivo ya no declara ninguna base; la API recibe DATABASE_URL a mano.
 services:
   - type: web
     name: dannytacos-api
@@ -20,9 +16,7 @@ services:
     startCommand: npm run start
     envVars:
       - key: DATABASE_URL
-        fromDatabase:
-          name: dannytacos-db
-          property: connectionString
+        sync: false # cadena del "Session pooler" de Supabase (Connect > Session pooler). Render es IPv4: NO usar la conexión directa.
       - key: JWT_SECRET
         generateValue: true
       - key: NODE_ENV
@@ -46,3 +40,12 @@ services:
     envVars:
       - key: VITE_API_URL
         sync: false # se completa a mano con la URL real de dannytacos-api una vez creado
+      # Datos del negocio que muestra la landing (se pueden dejar vacíos: lo vacío no se muestra).
+      - key: VITE_LOCAL_DIRECCION
+        sync: false # ej. "Calle 10 # 5-20, Laureles, Medellín" (también alimenta el mapa)
+      - key: VITE_TELEFONO
+        sync: false
+      - key: VITE_HORARIO
+        sync: false
+      - key: VITE_WHATSAPP_URL
+        sync: false # ej. https://wa.me/573001234567 ; vacío = el botón lleva al chat web (/chat)

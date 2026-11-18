@@ -9,6 +9,11 @@ interface ProductosContextValue {
   categorias: Categoria[];
   opciones: OpcionProducto[];
   opcionesDe: (idProducto: string) => OpcionProducto[];
+  /** true mientras se pide el menú por primera vez (la API gratuita puede tardar en despertar). */
+  cargando: boolean;
+  /** true si la carga del menú falló; usa recargar() para reintentar. */
+  errorCarga: boolean;
+  recargar: () => void;
   toggleDisponible: (idProducto: string) => Promise<void>;
   toggleActivo: (idProducto: string) => Promise<void>;
   guardarProducto: (producto: Producto) => Promise<void>;
@@ -23,6 +28,8 @@ export function ProductosProvider({ children }: { children: ReactNode }) {
   const [productos, setProductos] = useState<Producto[]>([]);
   const [categorias, setCategorias] = useState<Categoria[]>([]);
   const [opciones, setOpciones] = useState<OpcionProducto[]>([]);
+  const [cargando, setCargando] = useState(true);
+  const [errorCarga, setErrorCarga] = useState(false);
 
   // GET /productos y /categorias son públicos: los usan tanto el panel
   // admin (autenticado) como /toma-orden (sin sesión).
@@ -32,13 +39,20 @@ export function ProductosProvider({ children }: { children: ReactNode }) {
     setOpciones(data.flatMap((p) => p.opciones));
   }, []);
 
-  useEffect(() => {
-    recargarProductos().catch(() => {});
-    apiClient
-      .get<Categoria[]>("/categorias")
-      .then(setCategorias)
-      .catch(() => setCategorias([]));
+  const cargarTodo = useCallback(() => {
+    setCargando(true);
+    setErrorCarga(false);
+    Promise.all([
+      recargarProductos(),
+      apiClient.get<Categoria[]>("/categorias").then(setCategorias),
+    ])
+      .catch(() => setErrorCarga(true))
+      .finally(() => setCargando(false));
   }, [recargarProductos]);
+
+  useEffect(() => {
+    cargarTodo();
+  }, [cargarTodo]);
 
   const opcionesDe = (idProducto: string) => opciones.filter((o) => o.id_producto === idProducto);
 
@@ -91,6 +105,9 @@ export function ProductosProvider({ children }: { children: ReactNode }) {
         categorias,
         opciones,
         opcionesDe,
+        cargando,
+        errorCarga,
+        recargar: cargarTodo,
         toggleDisponible,
         toggleActivo,
         guardarProducto,

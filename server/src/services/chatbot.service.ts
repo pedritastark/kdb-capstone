@@ -196,6 +196,20 @@ async function preguntar(e: Estado, prefijo: string[] = []): Promise<Respuesta> 
 
   switch (e.paso) {
     case "telefono":
+      if (e.carrito.length) {
+        return con(
+          resp(
+            e,
+            [
+              "¡Hola! 👋 Ya recibí tu pedido armado desde la página 🛒",
+              `${resumenCarrito(e)}`,
+              "Solo me faltan unos datos para enviarlo a cocina. ¿Me das tu número de celular?",
+            ],
+            [],
+            { entrada: "telefono" },
+          ),
+        );
+      }
       return con(
         resp(
           e,
@@ -549,6 +563,18 @@ async function confirmarPedido(e: Estado): Promise<Respuesta> {
   }
 }
 
+function resumenCarrito(e: Estado): string {
+  return [...e.carrito.map((l) => `• ${descripcionLinea(l)} — ${moneda(totalLinea(l))}`), `Total: ${moneda(totalCarrito(e))}`].join("\n");
+}
+
+/** Ya sé quién es el cliente: con pedido precargado se salta el menú y se piden los datos de entrega. */
+const identificado = (e: Estado, prefijo: string[]) =>
+  e.carrito.length ? ir(e, "entrega", prefijo) : ir(e, "menu", prefijo);
+
+/** Ya sé cómo y adónde se entrega: con pedido precargado se salta el menú y se pide el pago. */
+const listoParaCatalogo = (e: Estado, prefijo: string[]) =>
+  e.carrito.length ? ir(e, "pago", prefijo) : ir(e, "categoria", prefijo);
+
 async function manejar(e: Estado, texto: string): Promise<Respuesta> {
   switch (e.paso) {
     case "telefono": {
@@ -566,9 +592,8 @@ async function manejar(e: Estado, texto: string): Promise<Respuesta> {
       );
       const cliente = rows[0];
       if (cliente && cliente.nombre !== "Cliente mostrador") {
-        return ir(
+        return identificado(
           { ...e, telefono: cliente.telefono, nombre: cliente.nombre, idCliente: cliente.id_cliente },
-          "menu",
           [`¡Qué gusto verte de nuevo, ${cliente.nombre}! 😊`],
         );
       }
@@ -580,7 +605,7 @@ async function manejar(e: Estado, texto: string): Promise<Respuesta> {
       if (nombre.length < 2 || nombre.length > 60) {
         return preguntar(e, ["Escríbeme tu nombre (entre 2 y 60 letras), por favor."]);
       }
-      return ir({ ...e, nombre }, "menu", [`¡Mucho gusto, ${nombre}! 🙌`]);
+      return identificado({ ...e, nombre }, [`¡Mucho gusto, ${nombre}! 🙌`]);
     }
 
     case "menu":
@@ -607,9 +632,8 @@ async function manejar(e: Estado, texto: string): Promise<Respuesta> {
         return ir(base, "direccion");
       }
       if (texto === "2") {
-        return ir(
+        return listoParaCatalogo(
           { ...e, tipo: "recogida", idDireccion: undefined, direccion: undefined, referencia: undefined },
-          "categoria",
           [`¡Perfecto! Puedes recogerlo en ${LOCAL_DIRECCION()} 🏪`],
         );
       }
@@ -619,9 +643,8 @@ async function manejar(e: Estado, texto: string): Promise<Respuesta> {
     case "dir_confirmar": {
       const d = e.tmp.dirGuardada;
       if (texto === "1" && d) {
-        return ir(
+        return listoParaCatalogo(
           { ...e, idDireccion: d.id, direccion: d.direccion, referencia: d.referencia ?? undefined, tmp: {} },
-          "categoria",
           ["¡Listo! Lo enviamos a esa dirección 🛵"],
         );
       }
@@ -638,7 +661,7 @@ async function manejar(e: Estado, texto: string): Promise<Respuesta> {
     case "referencia": {
       const ref = texto.trim();
       const sinRef = /^(no|ninguna|nada|-)$/i.test(ref);
-      return ir({ ...e, referencia: sinRef ? undefined : ref.slice(0, 200) }, "categoria", [
+      return listoParaCatalogo({ ...e, referencia: sinRef ? undefined : ref.slice(0, 200) }, [
         "¡Anotado! Lo enviamos a esa dirección 🛵 (el domicilio es gratis)",
       ]);
     }
@@ -772,9 +795,65 @@ async function manejar(e: Estado, texto: string): Promise<Respuesta> {
 
 // ── Punto de entrada ──────────────────────────────────────────────────────
 
-export async function procesarMensaje(estadoCrudo: unknown, textoCrudo: unknown): Promise<Respuesta> {
-  // Sin estado = conversación nueva: saluda y pide el teléfono.
-  if (estadoCrudo === undefined || estadoCrudo === null) return preguntar(nuevoEstado());
+export const pedidoPrecargadoSchema = z
+  .array(
+    z.object({
+      id_producto: z.string().uuid(),
+      cantidad: z.number().int().min(1).max(50),
+      excluidos: z.array(z.string().max(80)).max(30).default([]),
+      adicionales: z.array(z.string().uuid()).max(30).default([]),
+    }),
+  )
+  .min(1)
+  .max(40);
+
+/**
+ * Arma el carrito a partir de lo que mandó la página (landing). Todo se
+ * relee de la base: nombres y precios del cliente se ignoran, y lo que no
+ * exista o no esté disponible se descarta con un aviso.
+ */
+async function construirCarrito(crudo: unknown): Promise<{ carrito: Linea[]; avisos: string[] }> {
+  const parsed = pedidoPrecargadoSchema.safeParse(crudo);
+  if (!parsed.success) throw new ApiError(400, "Pedido inválido");
+
+  const carrito: Linea[] = [];
+  const avisos: string[] = [];
+  for (const item of parsed.data) {
+    const { rows } = await pool.query<{ nombre: string; precio: number; activo: boolean; disponible: boolean }>(
+      `SELECT nombre, precio, activo, disponible FROM productos WHERE id_producto = $1`,
+      [item.id_producto],
+    );
+    const p = rows[0];
+    if (!p) continue;
+    if (!p.activo || !p.disponible) {
+      avisos.push(`"${p.nombre}" se agotó, lo quité de tu pedido.`);
+      continue;
+    }
+    const { ingredientes, adicionales } = await datosPersonalizacion(item.id_producto);
+    carrito.push({
+      id_producto: item.id_producto,
+      nombre: p.nombre,
+      precio: p.precio,
+      cantidad: item.cantidad,
+      excluidos: item.excluidos.filter((n) => ingredientes.includes(n)),
+      adicionales: adicionales.filter((a) => item.adicionales.includes(a.id_opcion)),
+    });
+  }
+  return { carrito, avisos };
+}
+
+export async function procesarMensaje(
+  estadoCrudo: unknown,
+  textoCrudo: unknown,
+  pedidoCrudo?: unknown,
+): Promise<Respuesta> {
+  // Sin estado = conversación nueva. Si la página mandó un pedido armado, se
+  // precarga el carrito; si no, saluda normal. En ambos casos pide el teléfono.
+  if (estadoCrudo === undefined || estadoCrudo === null) {
+    if (pedidoCrudo === undefined || pedidoCrudo === null) return preguntar(nuevoEstado());
+    const { carrito, avisos } = await construirCarrito(pedidoCrudo);
+    return preguntar(nuevoEstado({ carrito }), avisos);
+  }
 
   const parsed = estadoSchema.safeParse(estadoCrudo);
   if (!parsed.success) throw new ApiError(400, "Estado de conversación inválido");
