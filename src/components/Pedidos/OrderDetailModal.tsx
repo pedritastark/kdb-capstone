@@ -46,11 +46,11 @@ export function OrderDetailModal({ pedido, onClose }: OrderDetailModalProps) {
   return (
     <Dialog.Root open={pedido !== null} onOpenChange={(e) => !e.open && cerrarYLimpiar()} size="lg">
       <Portal>
-        <Dialog.Backdrop bg="blackAlpha.700" />
+        <Dialog.Backdrop bg="blackAlpha.500" />
         <Dialog.Positioner>
           <Dialog.Content bg="bg.surface" border="1px solid" borderColor="border.subtle" borderRadius="card">
             <Dialog.Header borderBottom="1px solid" borderColor="border.subtle">
-              <Flex justify="space-between" align="center" w="full">
+              <Flex justify="space-between" align="center" w="full" pr={10}>
                 <Box>
                   <Dialog.Title>
                     <Text fontSize="xl" fontWeight="800">

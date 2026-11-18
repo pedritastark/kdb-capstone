@@ -11,13 +11,13 @@ export const ESTADO_PEDIDO_LABEL: Record<EstadoPedido, string> = {
 };
 
 export const ESTADO_PEDIDO_COLOR: Record<EstadoPedido, string> = {
-  recibido: "#2563eb",
-  confirmado: "#2563eb",
-  en_preparacion: "#f59e0b",
-  listo: "#10b981",
-  en_camino: "#10b981",
-  entregado: "#888888",
-  cancelado: "#ef4444",
+  recibido: "#1d4ed8",
+  confirmado: "#1d4ed8",
+  en_preparacion: "#a3470a",
+  listo: "#047857",
+  en_camino: "#047857",
+  entregado: "#57534e",
+  cancelado: "#b91c1c",
 };
 
 export const TIPO_ENTREGA_LABEL: Record<TipoEntrega, string> = {
@@ -34,10 +34,10 @@ export const MEDIO_PAGO_LABEL: Record<MedioPago, string> = {
 };
 
 export const MEDIO_PAGO_COLOR: Record<MedioPago, string> = {
-  efectivo: "#10b981",
-  nequi: "#ea580c",
-  daviplata: "#dc2626",
-  llave: "#2563eb",
+  efectivo: "#047857",
+  nequi: "#c2410c",
+  daviplata: "#b91c1c",
+  llave: "#1d4ed8",
 };
 
 export const ESTADO_PAGO_LABEL: Record<EstadoPago, string> = {
@@ -48,10 +48,10 @@ export const ESTADO_PAGO_LABEL: Record<EstadoPago, string> = {
 };
 
 export const ESTADO_PAGO_COLOR: Record<EstadoPago, string> = {
-  pendiente: "#888888",
-  reportado: "#f59e0b",
-  confirmado: "#10b981",
-  rechazado: "#ef4444",
+  pendiente: "#57534e",
+  reportado: "#a3470a",
+  confirmado: "#047857",
+  rechazado: "#b91c1c",
 };
 
 export const TIPO_MOVIMIENTO_LABEL: Record<TipoMovimientoInventario, string> = {
@@ -63,11 +63,11 @@ export const TIPO_MOVIMIENTO_LABEL: Record<TipoMovimientoInventario, string> = {
 };
 
 export const TIPO_MOVIMIENTO_COLOR: Record<TipoMovimientoInventario, string> = {
-  entrada: "#10b981",
-  consumo: "#2563eb",
-  perdida: "#ef4444",
-  ajuste: "#f59e0b",
-  devolucion: "#a0a0a0",
+  entrada: "#047857",
+  consumo: "#1d4ed8",
+  perdida: "#b91c1c",
+  ajuste: "#a3470a",
+  devolucion: "#6b645e",
 };
 
 export const TIPO_NOTIFICACION_LABEL: Record<TipoNotificacion, string> = {
@@ -80,12 +80,12 @@ export const TIPO_NOTIFICACION_LABEL: Record<TipoNotificacion, string> = {
 };
 
 export const TIPO_NOTIFICACION_COLOR: Record<TipoNotificacion, string> = {
-  nuevo_pedido: "#2563eb",
-  pago_reportado: "#f59e0b",
-  inventario_bajo: "#ef4444",
-  pedido_listo: "#10b981",
-  cancelacion: "#ef4444",
-  solicitud_asesor: "#a855f7",
+  nuevo_pedido: "#1d4ed8",
+  pago_reportado: "#a3470a",
+  inventario_bajo: "#b91c1c",
+  pedido_listo: "#047857",
+  cancelacion: "#b91c1c",
+  solicitud_asesor: "#7e22ce",
 };
 
 export const NUEVO_PEDIDO_MINUTOS = 2;

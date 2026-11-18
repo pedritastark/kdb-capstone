@@ -24,10 +24,10 @@ export function OrderCard({ pedido, onClick }: OrderCardProps) {
       overflow="hidden"
       border="1px solid"
       borderColor={esNuevo ? "danger.500" : "border.subtle"}
-      boxShadow={esNuevo ? "0 0 0 1px #ef4444" : "none"}
+      boxShadow={esNuevo ? "0 0 0 1px #b91c1c" : "none"}
       cursor="pointer"
       transition="transform 0.15s ease, box-shadow 0.15s ease"
-      _hover={{ transform: "translateY(-2px)", boxShadow: "0 8px 20px rgba(0,0,0,0.35)" }}
+      _hover={{ transform: "translateY(-2px)", boxShadow: "0 8px 20px rgba(0,0,0,0.14)" }}
       onClick={onClick}
     >
       <Flex bg="accent.500" color="white" px={3} py={2} align="center" justify="space-between">

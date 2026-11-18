@@ -18,7 +18,7 @@ export function ConfirmacionView({ tipoEntrega, mesa, codigo, onNuevoPedido }: C
           w="88px"
           h="88px"
           borderRadius="full"
-          bgImage="linear-gradient(135deg, #34d399, #059669)"
+          bgImage="linear-gradient(135deg, #047857, #065f46)"
           align="center"
           justify="center"
           fontSize="44px"

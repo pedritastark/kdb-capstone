@@ -24,33 +24,33 @@ const ESTILOS_POR_NOMBRE: Record<string, EstiloCategoria> = {
     emoji: "🌮",
     imagen: "/images/platos/taco-birria.png",
     color: "accent.500",
-    gradiente: "linear-gradient(135deg, #fb923c, #ea580c)",
+    gradiente: "linear-gradient(135deg, #c2410c, #9a3412)",
   },
   "Antojitos para Compartir": {
     emoji: "🧀",
     ocultarInsignia: true,
     imagen: "/images/platos/guacamole.png",
     color: "pink.500",
-    gradiente: "linear-gradient(135deg, #f472b6, #be185d)",
+    gradiente: "linear-gradient(135deg, #be185d, #9d174d)",
   },
   "Platos Fuertes": {
     emoji: "🍖",
     imagen: "/images/platos/hamburguesa.png",
     color: "info.500",
-    gradiente: "linear-gradient(135deg, #60a5fa, #1d4ed8)",
+    gradiente: "linear-gradient(135deg, #2563eb, #1d4ed8)",
   },
   Bebidas: {
     emoji: "🥤",
     ocultarInsignia: true,
     imagen: "/images/platos/michelada-de-mango.png",
     color: "sky.500",
-    gradiente: "linear-gradient(135deg, #7dd3fc, #0ea5e9)",
+    gradiente: "linear-gradient(135deg, #0369a1, #075985)",
   },
   Postres: {
     emoji: "🍮",
     imagen: "/images/platos/churro-loco.png",
     color: "warning.500",
-    gradiente: "linear-gradient(135deg, #fbbf24, #d97706)",
+    gradiente: "linear-gradient(135deg, #a3470a, #8a3a08)",
   },
 };
 

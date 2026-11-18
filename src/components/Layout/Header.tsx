@@ -29,11 +29,11 @@ export function Header() {
     <Box position="sticky" top={0} zIndex={10}>
       <Flex as="header" align="center" px={6} py={3} bg="bg.surface" borderBottom="1px solid" borderColor="border.subtle">
         <Flex flex={1} gap={5} display={{ base: "none", lg: "flex" }}>
-          <StatItem label="Órdenes activas" valor={ordenesActivas} color="#f97316" />
-          <StatItem label="Entregas / hora" valor={entregasUltimaHora} color="#10b981" />
+          <StatItem label="Órdenes activas" valor={ordenesActivas} color="#c2410c" />
+          <StatItem label="Entregas / hora" valor={entregasUltimaHora} color="#047857" />
         </Flex>
 
-        <Text fontFamily="heading" letterSpacing="wide" fontSize="lg" color="white" whiteSpace="nowrap">
+        <Text fontFamily="heading" letterSpacing="wide" fontSize="lg" color="text.primary" whiteSpace="nowrap">
           DANNY TACOS
         </Text>
 
@@ -57,7 +57,7 @@ export function Header() {
                     top="-2px"
                     right="-2px"
                     bg="accent.500"
-                    color="black"
+                    color="white"
                     borderRadius="full"
                     fontSize="10px"
                     fontWeight="800"

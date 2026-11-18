@@ -26,7 +26,7 @@ export function MesaGate({ onConfirmar, onVolver }: MesaGateProps) {
           </Flex>
         )}
         <Text fontSize="56px" mb={2}>🍽️</Text>
-        <Text fontFamily="heading" letterSpacing="wide" fontSize="2xl" color="white" mb={1}>
+        <Text fontFamily="heading" letterSpacing="wide" fontSize="2xl" color="text.primary" mb={1}>
           DANNY TACOS
         </Text>
         <Text color="text.secondary" fontSize="sm" mb={8}>

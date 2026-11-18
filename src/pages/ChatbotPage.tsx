@@ -125,7 +125,7 @@ export function ChatbotPage() {
             style={{ height: "44px", width: "44px", borderRadius: "9999px", objectFit: "cover" }}
           />
           <Box>
-            <Text fontFamily="heading" letterSpacing="wide" color="white" lineHeight="1.1">
+            <Text fontFamily="heading" letterSpacing="wide" color="text.primary" lineHeight="1.1">
               DANNY TACOS
             </Text>
             <Text fontSize="xs" color="text.secondary">
@@ -145,7 +145,7 @@ export function ChatbotPage() {
                 borderBottomRightRadius={b.de === "yo" ? "4px" : "16px"}
                 borderBottomLeftRadius={b.de === "bot" ? "4px" : "16px"}
                 bg={b.de === "yo" ? "accent.500" : "bg.surface"}
-                color={b.de === "yo" ? "black" : "white"}
+                color={b.de === "yo" ? "white" : "text.primary"}
                 border={b.de === "bot" ? "1px solid" : undefined}
                 borderColor="border.subtle"
                 fontSize="sm"
@@ -188,7 +188,7 @@ export function ChatbotPage() {
                       variant="outline"
                       borderColor={activa ? "accent.500" : "border.subtle"}
                       bg={activa ? "accent.500" : "bg.surface"}
-                      color={activa ? "black" : "white"}
+                      color={activa ? "white" : "text.primary"}
                       onClick={() => (multi ? alternar(o.valor) : void enviar(o.valor, o.etiqueta))}
                     >
                       {activa ? "✓ " : ""}
@@ -197,7 +197,7 @@ export function ChatbotPage() {
                   );
                 })}
               {multi && (
-                <Button size="sm" bg="sky.500" color="black" _hover={{ bg: "sky.400" }} onClick={enviarMarcadas}>
+                <Button size="sm" bg="sky.500" color="white" _hover={{ bg: "sky.600" }} onClick={enviarMarcadas}>
                   {marcadas.size ? `Listo (${marcadas.size})` : "Listo / ninguno"}
                 </Button>
               )}
@@ -216,7 +216,7 @@ export function ChatbotPage() {
               disabled={cargando}
               maxLength={300}
             />
-            <Button aria-label="Enviar" bg="accent.500" color="black" onClick={enviarTexto} disabled={cargando || !texto.trim()}>
+            <Button aria-label="Enviar" bg="accent.500" color="white" _hover={{ bg: "accent.600" }} onClick={enviarTexto} disabled={cargando || !texto.trim()}>
               <FiSend />
             </Button>
           </Flex>

@@ -37,7 +37,7 @@ export function ProductosView({
         <IconButton aria-label="Volver a categorías" variant="ghost" color="text.secondary" size="sm" onClick={onVolver}>
           <FiArrowLeft />
         </IconButton>
-        <Text fontSize="lg" fontWeight="800" color="white">
+        <Text fontSize="lg" fontWeight="800" color="text.primary">
           {categoriaActual?.nombre}
         </Text>
       </Flex>
@@ -122,7 +122,7 @@ export function ProductosView({
                 </Flex>
 
                 <Box as="button" onClick={() => onPersonalizar(p)} flex={1} minW={0} textAlign="left" cursor="pointer">
-                  <Text fontWeight="700" color="white" fontSize="sm" lineClamp={1}>
+                  <Text fontWeight="700" color="text.primary" fontSize="sm" lineClamp={1}>
                     {p.nombre}
                   </Text>
                   <Text fontSize="xs" color="text.tertiary" lineClamp={2} mb={1}>
@@ -163,7 +163,7 @@ export function ProductosView({
                     >
                       <FiMinus />
                     </IconButton>
-                    <Text fontWeight="800" color="white" minW="18px" textAlign="center">
+                    <Text fontWeight="800" color="text.primary" minW="18px" textAlign="center">
                       {cantidad}
                     </Text>
                     <IconButton

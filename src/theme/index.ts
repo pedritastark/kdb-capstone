@@ -1,22 +1,32 @@
 import { createSystem, defaultConfig, defineConfig } from "@chakra-ui/react";
 
-// Tema oscuro fijo tipo KDS (Kitchen Display System) para Danny Tacos.
-// No se usa modo claro: todos los semanticTokens resuelven a un único valor.
+// Tema CLARO fijo para Danny Tacos (fondo crema, tarjetas blancas, texto casi negro).
+// No hay modo oscuro: todos los semanticTokens resuelven a un único valor.
+//
+// Los colores de acento (accent/success/danger/...) están elegidos para servir a la
+// vez como RELLENO con texto blanco y como TEXTO sobre fondo claro, ambos con
+// contraste >= 4.5:1 (WCAG AA). Por eso las pasos 400 y 500 comparten valor.
 
 const config = defineConfig({
   globalCss: {
     "html, body": {
-      bg: "#0a0a0a",
-      color: "#ffffff",
-      colorScheme: "dark",
+      bg: "#fbf7f1",
+      color: "#1c1917",
+      colorScheme: "light",
       fontFamily:
         '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
     },
     "#root": {
       minHeight: "100vh",
     },
+    // El placeholder por defecto de Chakra es un gris al 80% de opacidad: sobre el fondo
+    // crema queda en ~4.2:1. Se fija un gris sólido (5.0:1 sobre bg.inset).
+    "input::placeholder, textarea::placeholder": {
+      color: "#6b645e",
+      opacity: 1,
+    },
     "*": {
-      borderColor: "#333333",
+      borderColor: "#e4dccf",
     },
   },
   theme: {
@@ -27,56 +37,56 @@ const config = defineConfig({
       },
       colors: {
         bg: {
-          canvas: { value: "#0a0a0a" },
-          surface: { value: "#1a1a1a" },
-          inset: { value: "#262626" },
+          canvas: { value: "#fbf7f1" },
+          surface: { value: "#ffffff" },
+          inset: { value: "#f6f1e9" },
         },
         border: {
-          subtle: { value: "#333333" },
-          muted: { value: "#2a2a2a" },
+          subtle: { value: "#e4dccf" },
+          muted: { value: "#eee7dc" },
         },
         text: {
-          primary: { value: "#ffffff" },
-          secondary: { value: "#a0a0a0" },
-          tertiary: { value: "#888888" },
+          primary: { value: "#1c1917" },
+          secondary: { value: "#57534e" },
+          tertiary: { value: "#6b645e" },
         },
         accent: {
           50: { value: "#fff3e8" },
           100: { value: "#ffe0c2" },
-          400: { value: "#fb923c" },
-          500: { value: "#f97316" },
-          600: { value: "#ea580c" },
-          700: { value: "#c2410c" },
+          400: { value: "#c2410c" },
+          500: { value: "#c2410c" },
+          600: { value: "#9a3412" },
+          700: { value: "#7c2d12" },
         },
         pink: {
-          400: { value: "#f472b6" },
-          500: { value: "#e6157d" },
-          600: { value: "#be185d" },
+          400: { value: "#be185d" },
+          500: { value: "#be185d" },
+          600: { value: "#9d174d" },
         },
         sky: {
-          400: { value: "#7dd3fc" },
-          500: { value: "#38bdf8" },
-          600: { value: "#0ea5e9" },
+          400: { value: "#0369a1" },
+          500: { value: "#0369a1" },
+          600: { value: "#075985" },
         },
         success: {
-          400: { value: "#34d399" },
-          500: { value: "#10b981" },
-          600: { value: "#059669" },
+          400: { value: "#047857" },
+          500: { value: "#047857" },
+          600: { value: "#065f46" },
         },
         info: {
-          400: { value: "#3b82f6" },
-          500: { value: "#2563eb" },
-          600: { value: "#1d4ed8" },
+          400: { value: "#1d4ed8" },
+          500: { value: "#1d4ed8" },
+          600: { value: "#1e40af" },
         },
         warning: {
-          400: { value: "#fbbf24" },
-          500: { value: "#f59e0b" },
-          600: { value: "#d97706" },
+          400: { value: "#a3470a" },
+          500: { value: "#a3470a" },
+          600: { value: "#92400e" },
         },
         danger: {
-          400: { value: "#f87171" },
-          500: { value: "#ef4444" },
-          600: { value: "#dc2626" },
+          400: { value: "#b91c1c" },
+          500: { value: "#b91c1c" },
+          600: { value: "#991b1b" },
         },
       },
       radii: {

@@ -46,7 +46,7 @@ export function ClientesPage() {
       </Flex>
 
       <Flex align="center" gap={2} mb={4} bg="bg.surface" border="1px solid" borderColor="border.subtle" borderRadius="8px" px={3} maxW="360px">
-        <FiSearch color="#888" />
+        <FiSearch color="#6b645e" />
         <Input
           placeholder="Buscar por nombre o teléfono..."
           value={busqueda}

@@ -12,9 +12,9 @@ interface Columna {
 }
 
 const columnas: Columna[] = [
-  { titulo: "Recibido", color: "#2563eb", estados: ["recibido", "confirmado"] },
-  { titulo: "En Preparación", color: "#f59e0b", estados: ["en_preparacion"] },
-  { titulo: "En Camino / Listo", color: "#10b981", estados: ["listo", "en_camino"] },
+  { titulo: "Recibido", color: "#1d4ed8", estados: ["recibido", "confirmado"] },
+  { titulo: "En Preparación", color: "#a3470a", estados: ["en_preparacion"] },
+  { titulo: "En Camino / Listo", color: "#047857", estados: ["listo", "en_camino"] },
 ];
 
 export function KanbanBoard() {

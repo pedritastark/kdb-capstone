@@ -2,7 +2,7 @@ import { useState, type ReactNode } from "react";
 import { Link as RouterLink, useNavigate } from "react-router-dom";
 import { Box, Flex, Grid, Text } from "@chakra-ui/react";
 import { FaWhatsapp } from "react-icons/fa";
-import { FiClock, FiMapPin, FiNavigation, FiPhone } from "react-icons/fi";
+import { FiClock, FiMapPin, FiMessageCircle, FiNavigation, FiPhone } from "react-icons/fi";
 import { NEGOCIO, soloDigitos, urlComoLlegar, urlMapaEmbed } from "../config/negocio";
 import { useCarritoLanding } from "../hooks/useCarritoLanding";
 import { itemsParaApi, mensajeWhatsApp, urlWhatsAppConPedido } from "../lib/carrito";
@@ -12,7 +12,9 @@ import { MenuSeccion } from "../components/Landing/MenuSeccion";
 import { CarritoDrawer } from "../components/Landing/CarritoDrawer";
 import logoDannyTacos from "../assets/images/logo-danny-tacos.jpg";
 
-const VERDE_WHATSAPP = "#25D366";
+// Verde de WhatsApp algo más oscuro que el oficial (#25D366): con texto blanco el oficial
+// da solo 2.0:1 de contraste; este da 5.0:1.
+const VERDE_WHATSAPP = "#15803d";
 
 // Fotos servidas desde /public/landing (optimizadas, no dependen de la API).
 const DESTACADOS: { img: string; nombre: string; pos?: string }[] = [
@@ -46,9 +48,9 @@ function BotonWhatsApp({ grande = false, etiqueta = "Pedir por WhatsApp" }: { gr
     color: "white",
     fontWeight: "700",
     fontSize: grande ? "lg" : "md",
-    boxShadow: "0 10px 30px rgba(37, 211, 102, 0.35)",
+    boxShadow: "0 10px 30px rgba(21, 128, 61, 0.30)",
     transition: "transform 0.15s, box-shadow 0.15s",
-    _hover: { transform: "translateY(-2px)", boxShadow: "0 14px 34px rgba(37, 211, 102, 0.5)" },
+    _hover: { transform: "translateY(-2px)", boxShadow: "0 14px 34px rgba(21, 128, 61, 0.42)" },
     _active: { transform: "scale(0.98)" },
   } as const;
   const contenido = (
@@ -73,7 +75,7 @@ function BotonWhatsApp({ grande = false, etiqueta = "Pedir por WhatsApp" }: { gr
 function Seccion({ id, titulo, subtitulo, children }: { id?: string; titulo: string; subtitulo?: string; children: ReactNode }) {
   return (
     <Box as="section" id={id} scrollMarginTop="64px" px={{ base: 5, md: 8 }} py={{ base: 12, md: 20 }} maxW="1100px" mx="auto" w="full">
-      <Text fontFamily="heading" letterSpacing="wide" color="white" fontSize={{ base: "3xl", md: "4xl" }} textAlign="center">
+      <Text fontFamily="heading" letterSpacing="wide" color="text.primary" fontSize={{ base: "3xl", md: "4xl" }} textAlign="center">
         {titulo}
       </Text>
       {subtitulo && (
@@ -103,7 +105,7 @@ function DatoContacto({ icono, titulo, children }: { icono: ReactNode; titulo: s
         {icono}
       </Flex>
       <Box minW={0}>
-        <Text fontWeight="700" color="white" fontSize="sm" mb={0.5}>
+        <Text fontWeight="700" color="text.primary" fontSize="sm" mb={0.5}>
           {titulo}
         </Text>
         <Box color="text.secondary" fontSize="sm">
@@ -152,7 +154,7 @@ export function LandingPage() {
         <Box
           position="absolute"
           inset={0}
-          bg="linear-gradient(180deg, rgba(10,10,10,0.55) 0%, rgba(10,10,10,0.7) 55%, #0a0a0a 100%)"
+          bg="linear-gradient(180deg, rgba(251,247,241,0.80) 0%, rgba(251,247,241,0.88) 55%, #fbf7f1 100%)"
         />
         <Flex
           position="relative"
@@ -169,20 +171,20 @@ export function LandingPage() {
           <img
             src={logoDannyTacos}
             alt="Logo de Danny Tacos"
-            style={{ height: "96px", width: "96px", borderRadius: "9999px", objectFit: "cover", border: "3px solid rgba(255,255,255,0.15)" }}
+            style={{ height: "96px", width: "96px", borderRadius: "9999px", objectFit: "cover", border: "3px solid #ffffff", boxShadow: "0 6px 18px rgba(0,0,0,0.18)" }}
           />
           <Text
             as="h1"
             fontFamily="heading"
             letterSpacing="wide"
-            color="white"
+            color="text.primary"
             fontSize={{ base: "5xl", md: "7xl" }}
             lineHeight="1.02"
             mt={6}
           >
             TACOS DE BIRRIA, PASTOR Y MUCHO ANTOJO
           </Text>
-          <Text color="whiteAlpha.900" fontSize={{ base: "md", md: "xl" }} mt={5} maxW="620px">
+          <Text color="text.secondary" fontSize={{ base: "md", md: "xl" }} mt={5} maxW="620px">
             Antojitos mexicanos hechos al momento. Pide en un minuto: domicilio sin costo y sin pedido mínimo, o pasa a
             recogerlo.
           </Text>
@@ -196,16 +198,17 @@ export function LandingPage() {
               h="64px"
               px={9}
               borderRadius="full"
-              border="2px solid rgba(255,255,255,0.5)"
-              color="white"
+              border="2px solid"
+              borderColor="text.primary"
+              color="text.primary"
               fontWeight="700"
               fontSize="lg"
-              _hover={{ bg: "whiteAlpha.200" }}
+              _hover={{ bg: "rgba(28,25,23,0.06)" }}
             >
               <a href="#menu">Ver el menú</a>
             </Box>
           </Flex>
-          <Text color="whiteAlpha.800" fontSize="sm" mt={5}>
+          <Text color="text.secondary" fontSize="sm" mt={5}>
             🕐 Nuestro asistente recibe tu pedido a cualquier hora
           </Text>
         </Flex>
@@ -249,9 +252,9 @@ export function LandingPage() {
             px={8}
             borderRadius="full"
             bg="accent.500"
-            color="black"
+            color="white"
             fontWeight="700"
-            _hover={{ bg: "accent.400" }}
+            _hover={{ bg: "accent.600" }}
           >
             <a href="#menu">Ver el menú completo y armar mi pedido</a>
           </Box>
@@ -278,13 +281,13 @@ export function LandingPage() {
                   h="52px"
                   borderRadius="full"
                   bg="accent.500"
-                  color="black"
+                  color="white"
                   fontFamily="heading"
                   fontSize="2xl"
                 >
                   {p.n}
                 </Flex>
-                <Text color="white" fontWeight="700" fontSize="lg">
+                <Text color="text.primary" fontWeight="700" fontSize="lg">
                   {p.titulo}
                 </Text>
                 <Text color="text.secondary" fontSize="sm" maxW="300px">
@@ -355,6 +358,30 @@ export function LandingPage() {
         </Box>
       </Box>
 
+      {/* ── Botón flotante del chatbot, encima del de WhatsApp / "Ver mi pedido" ── */}
+      <Box
+        asChild
+        position="fixed"
+        right={{ base: 4, md: 6 }}
+        bottom={{ base: "88px", md: "96px" }}
+        zIndex={20}
+        w="60px"
+        h="60px"
+        borderRadius="full"
+        bg="accent.500"
+        color="white"
+        display="flex"
+        alignItems="center"
+        justifyContent="center"
+        boxShadow="0 8px 24px rgba(0,0,0,0.28)"
+        _hover={{ transform: "scale(1.06)", bg: "accent.600" }}
+        transition="transform 0.15s, background 0.15s"
+      >
+        <RouterLink to="/chat" aria-label="Pedir por el chat" title="Pedir por el chat">
+          <FiMessageCircle size={30} />
+        </RouterLink>
+      </Box>
+
       {/* ── Botón flotante: "Ver mi pedido" si hay productos, WhatsApp si no ── */}
       {carrito.cantidad > 0 ? (
         <Box
@@ -373,7 +400,7 @@ export function LandingPage() {
           alignItems="center"
           gap={3}
           fontWeight="700"
-          boxShadow="0 8px 24px rgba(0,0,0,0.45)"
+          boxShadow="0 8px 24px rgba(0,0,0,0.28)"
           _hover={{ transform: "scale(1.03)" }}
           transition="transform 0.15s"
         >
@@ -394,7 +421,7 @@ export function LandingPage() {
           display="flex"
           alignItems="center"
           justifyContent="center"
-          boxShadow="0 8px 24px rgba(0,0,0,0.45)"
+          boxShadow="0 8px 24px rgba(0,0,0,0.28)"
           _hover={{ transform: "scale(1.06)" }}
           transition="transform 0.15s"
         >

@@ -18,7 +18,7 @@ export function NotificacionesPage() {
             NOTIFICACIONES
           </Text>
           {noLeidas > 0 && (
-            <Badge bg="accent.500" color="black" fontWeight="800" borderRadius="full" px={2}>
+            <Badge bg="accent.500" color="white" fontWeight="800" borderRadius="full" px={2}>
               {noLeidas} sin leer
             </Badge>
           )}

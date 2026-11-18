@@ -33,12 +33,12 @@ export function CarritoDrawer({
   return (
     <Drawer.Root open={abierto} onOpenChange={(e) => !e.open && onCerrar()} placement="end" size="sm">
       <Portal>
-        <Drawer.Backdrop bg="blackAlpha.700" />
+        <Drawer.Backdrop bg="blackAlpha.500" />
         <Drawer.Positioner>
           <Drawer.Content bg="bg.surface" borderLeft="1px solid" borderColor="border.subtle" maxW="min(420px, 100vw)">
             <Drawer.Header borderBottom="1px solid" borderColor="border.subtle">
               <Drawer.Title>
-                <Text fontFamily="heading" letterSpacing="wide" color="white" fontSize="2xl">
+                <Text fontFamily="heading" letterSpacing="wide" color="text.primary" fontSize="2xl">
                   MI PEDIDO
                 </Text>
               </Drawer.Title>
@@ -54,7 +54,7 @@ export function CarritoDrawer({
                 <Flex direction="column" align="center" justify="center" gap={4} h="full" textAlign="center" py={10}>
                   <Text fontSize="5xl">🛒</Text>
                   <Text color="text.secondary">Tu pedido está vacío. Agrega algo del menú.</Text>
-                  <Button onClick={onVerMenu} bg="accent.500" color="black" _hover={{ bg: "accent.400" }}>
+                  <Button onClick={onVerMenu} bg="accent.500" color="white" _hover={{ bg: "accent.600" }}>
                     Ver el menú
                   </Button>
                 </Flex>
@@ -66,7 +66,7 @@ export function CarritoDrawer({
                       <Box key={l.clave} bg="bg.inset" borderRadius="14px" p={3}>
                         <Flex justify="space-between" gap={3} align="flex-start">
                           <Box minW={0}>
-                            <Text color="white" fontWeight="700" fontSize="sm">
+                            <Text color="text.primary" fontWeight="700" fontSize="sm">
                               {l.nombre}
                             </Text>
                             {detalle && (
@@ -75,7 +75,7 @@ export function CarritoDrawer({
                               </Text>
                             )}
                           </Box>
-                          <Text color="white" fontWeight="700" fontSize="sm" flexShrink={0}>
+                          <Text color="text.primary" fontWeight="700" fontSize="sm" flexShrink={0}>
                             {formatoMoneda(totalLinea(l))}
                           </Text>
                         </Flex>
@@ -94,19 +94,19 @@ export function CarritoDrawer({
                             >
                               <FiMinus />
                             </Button>
-                            <Text color="white" fontWeight="800" minW="22px" textAlign="center">
+                            <Text color="text.primary" fontWeight="800" minW="22px" textAlign="center">
                               {l.cantidad}
                             </Text>
                             <Button
                               aria-label={`Agregar una unidad de ${l.nombre}`}
                               size="xs"
                               bg="accent.500"
-                              color="black"
+                              color="white"
                               borderRadius="full"
                               minW="30px"
                               h="30px"
                               p={0}
-                              _hover={{ bg: "accent.400" }}
+                              _hover={{ bg: "accent.600" }}
                               onClick={() => onCambiarCantidad(l.clave, 1)}
                             >
                               <FiPlus />
@@ -139,7 +139,7 @@ export function CarritoDrawer({
                   <Text color="text.secondary" fontSize="sm">
                     Total · domicilio sin costo
                   </Text>
-                  <Text color="white" fontWeight="800" fontSize="2xl">
+                  <Text color="text.primary" fontWeight="800" fontSize="2xl">
                     {formatoMoneda(total)}
                   </Text>
                 </Flex>
@@ -147,11 +147,11 @@ export function CarritoDrawer({
                   w="full"
                   h="56px"
                   borderRadius="full"
-                  bg="#25D366"
+                  bg="#15803d"
                   color="white"
                   fontWeight="700"
                   fontSize="md"
-                  _hover={{ bg: "#1ebe5b" }}
+                  _hover={{ bg: "#166534" }}
                   onClick={onHacerOrden}
                 >
                   <FaWhatsapp size={24} /> Hacer orden

@@ -66,7 +66,7 @@ export function PersonalizarModal({ producto, cantidadInicial = 1, onCerrar, onC
   return (
     <Dialog.Root open={producto !== null} onOpenChange={(e) => !e.open && onCerrar()} size="md">
       <Portal>
-        <Dialog.Backdrop bg="blackAlpha.700" />
+        <Dialog.Backdrop bg="blackAlpha.500" />
         <Dialog.Positioner>
           <Dialog.Content
             bg="bg.surface"
@@ -94,7 +94,7 @@ export function PersonalizarModal({ producto, cantidadInicial = 1, onCerrar, onC
 
             <Dialog.Header pb={0} flexShrink={0}>
               <Dialog.Title>
-                <Text fontSize="lg" fontWeight="800" color="white">
+                <Text fontSize="lg" fontWeight="800" color="text.primary">
                   {producto.nombre}
                 </Text>
               </Dialog.Title>
@@ -174,7 +174,7 @@ export function PersonalizarModal({ producto, cantidadInicial = 1, onCerrar, onC
                     >
                       −
                     </Button>
-                    <Text fontWeight="800" color="white" minW="20px" textAlign="center">
+                    <Text fontWeight="800" color="text.primary" minW="20px" textAlign="center">
                       {cantidad}
                     </Text>
                     <Button

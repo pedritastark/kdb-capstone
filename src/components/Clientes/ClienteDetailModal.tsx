@@ -26,7 +26,7 @@ export function ClienteDetailModal({ cliente, onClose, onEditar }: ClienteDetail
   return (
     <Dialog.Root open={cliente !== null} onOpenChange={(e) => !e.open && onClose()} size="lg">
       <Portal>
-        <Dialog.Backdrop bg="blackAlpha.700" />
+        <Dialog.Backdrop bg="blackAlpha.500" />
         <Dialog.Positioner>
           <Dialog.Content bg="bg.surface" border="1px solid" borderColor="border.subtle" borderRadius="card">
             <Dialog.Header borderBottom="1px solid" borderColor="border.subtle">

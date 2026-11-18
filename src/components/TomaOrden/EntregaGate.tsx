@@ -17,14 +17,14 @@ const OPCIONES: {
     emoji: "🍽️",
     titulo: "Aquí, en la mesa",
     descripcion: "Pide desde donde estás sentado",
-    gradiente: "linear-gradient(135deg, #fb923c, #ea580c)",
+    gradiente: "linear-gradient(135deg, #ea580c, #c2410c)",
   },
   {
     tipo: "domicilio",
     emoji: "🛵",
     titulo: "A domicilio",
     descripcion: "Te lo llevamos a tu dirección",
-    gradiente: "linear-gradient(135deg, #7dd3fc, #0ea5e9)",
+    gradiente: "linear-gradient(135deg, #0284c7, #0369a1)",
   },
 ];
 
@@ -35,7 +35,7 @@ export function EntregaGate({ onSeleccionar }: EntregaGateProps) {
         <Text fontSize="56px" mb={2}>
           🌮
         </Text>
-        <Text fontFamily="heading" letterSpacing="wide" fontSize="2xl" color="white" mb={1}>
+        <Text fontFamily="heading" letterSpacing="wide" fontSize="2xl" color="text.primary" mb={1}>
           DANNY TACOS
         </Text>
         <Text color="text.secondary" fontSize="sm" mb={10}>
@@ -61,7 +61,7 @@ export function EntregaGate({ onSeleccionar }: EntregaGateProps) {
               cursor="pointer"
               transition="transform 0.15s ease, box-shadow 0.15s ease"
               _active={{ transform: "scale(0.97)" }}
-              _hover={{ transform: "translateY(-2px)", boxShadow: "0 10px 28px rgba(0,0,0,0.4)" }}
+              _hover={{ transform: "translateY(-2px)", boxShadow: "0 10px 28px rgba(0,0,0,0.16)" }}
             >
               <Flex
                 w="64px"
@@ -76,7 +76,7 @@ export function EntregaGate({ onSeleccionar }: EntregaGateProps) {
                 {op.emoji}
               </Flex>
               <Box textAlign="left">
-                <Text fontWeight="800" color="white" fontSize="md">
+                <Text fontWeight="800" color="text.primary" fontSize="md">
                   {op.titulo}
                 </Text>
                 <Text fontSize="xs" color="text.tertiary">

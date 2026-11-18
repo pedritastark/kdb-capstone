@@ -48,7 +48,7 @@ export function CarritoView({
         <IconButton aria-label="Seguir pidiendo" variant="ghost" color="text.secondary" size="sm" onClick={onVolver}>
           <FiArrowLeft />
         </IconButton>
-        <Text fontSize="lg" fontWeight="800" color="white">
+        <Text fontSize="lg" fontWeight="800" color="text.primary">
           Tu pedido
         </Text>
       </Flex>
@@ -108,7 +108,7 @@ export function CarritoView({
               </Flex>
 
               <Box flex={1} minW={0}>
-                <Text fontWeight="700" color="white" fontSize="sm" lineClamp={1}>
+                <Text fontWeight="700" color="text.primary" fontSize="sm" lineClamp={1}>
                   {producto.nombre}
                 </Text>
                 <Text fontSize="xs" color="text.tertiary">
@@ -138,7 +138,7 @@ export function CarritoView({
                 >
                   {cantidad === 1 ? <FiTrash2 /> : <FiMinus />}
                 </IconButton>
-                <Text fontWeight="800" color="white" minW="18px" textAlign="center">
+                <Text fontWeight="800" color="text.primary" minW="18px" textAlign="center">
                   {cantidad}
                 </Text>
                 <IconButton

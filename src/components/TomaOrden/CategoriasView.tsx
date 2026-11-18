@@ -11,7 +11,7 @@ interface CategoriasViewProps {
 export function CategoriasView({ categorias, onSeleccionar }: CategoriasViewProps) {
   return (
     <Box px={5} pt={6} pb={28}>
-      <Text fontSize="2xl" fontWeight="800" color="white" mb={1}>
+      <Text fontSize="2xl" fontWeight="800" color="text.primary" mb={1}>
         ¿Qué se te antoja hoy? 😋
       </Text>
       <Text fontSize="sm" color="text.secondary" mb={6}>
@@ -35,7 +35,7 @@ export function CategoriasView({ categorias, onSeleccionar }: CategoriasViewProp
               cursor="pointer"
               transition="transform 0.15s ease, box-shadow 0.15s ease"
               _active={{ transform: "scale(0.96)" }}
-              _hover={{ transform: "translateY(-2px)", boxShadow: "0 10px 28px rgba(0,0,0,0.4)" }}
+              _hover={{ transform: "translateY(-2px)", boxShadow: "0 10px 28px rgba(0,0,0,0.16)" }}
               h="150px"
               bgImage={imagen ? undefined : estilo.gradiente}
               bg={imagen ? "bg.surface" : undefined}

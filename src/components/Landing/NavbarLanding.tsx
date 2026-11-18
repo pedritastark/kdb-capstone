@@ -9,13 +9,13 @@ interface NavbarLandingProps {
 }
 
 const LINK_PROPS = {
-  color: "whiteAlpha.900",
+  color: "text.primary",
   fontWeight: "600",
   fontSize: "sm",
   px: 3,
   py: 2,
   borderRadius: "full",
-  _hover: { bg: "whiteAlpha.200" },
+  _hover: { bg: "bg.inset" },
 } as const;
 
 export function NavbarLanding({ cantidadCarrito, onAbrirCarrito }: NavbarLandingProps) {
@@ -25,7 +25,7 @@ export function NavbarLanding({ cantidadCarrito, onAbrirCarrito }: NavbarLanding
       position="sticky"
       top={0}
       zIndex={30}
-      bg="rgba(10,10,10,0.82)"
+      bg="rgba(251,247,241,0.9)"
       backdropFilter="blur(10px)"
       borderBottom="1px solid"
       borderColor="border.subtle"
@@ -39,7 +39,7 @@ export function NavbarLanding({ cantidadCarrito, onAbrirCarrito }: NavbarLanding
                 alt=""
                 style={{ height: "40px", width: "40px", borderRadius: "9999px", objectFit: "cover" }}
               />
-              <Text fontFamily="heading" letterSpacing="wide" color="white" fontSize="lg" display={{ base: "none", sm: "block" }}>
+              <Text fontFamily="heading" letterSpacing="wide" color="text.primary" fontSize="lg" display={{ base: "none", sm: "block" }}>
                 DANNY TACOS
               </Text>
             </Flex>
@@ -65,11 +65,11 @@ export function NavbarLanding({ cantidadCarrito, onAbrirCarrito }: NavbarLanding
             px={4}
             borderRadius="full"
             border="1px solid"
-            borderColor="whiteAlpha.400"
-            color="white"
+            borderColor="#cfc4b3"
+            color="text.primary"
             fontWeight="600"
             fontSize="sm"
-            _hover={{ bg: "whiteAlpha.200" }}
+            _hover={{ bg: "bg.inset" }}
           >
             <RouterLink to="/login">
               <FiUser />
@@ -89,9 +89,9 @@ export function NavbarLanding({ cantidadCarrito, onAbrirCarrito }: NavbarLanding
             h="40px"
             borderRadius="full"
             bg="accent.500"
-            color="black"
+            color="white"
             fontSize="lg"
-            _hover={{ bg: "accent.400" }}
+            _hover={{ bg: "accent.600" }}
           >
             <FiShoppingCart />
             {cantidadCarrito > 0 && (
@@ -105,8 +105,8 @@ export function NavbarLanding({ cantidadCarrito, onAbrirCarrito }: NavbarLanding
                 align="center"
                 justify="center"
                 borderRadius="full"
-                bg="white"
-                color="black"
+                bg="text.primary"
+                color="white"
                 fontSize="11px"
                 fontWeight="800"
               >

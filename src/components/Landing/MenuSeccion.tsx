@@ -52,7 +52,7 @@ export function MenuSeccion({ onAgregar }: MenuSeccionProps) {
       {!cargando && errorCarga && (
         <Flex direction="column" align="center" gap={3} py={10}>
           <Text color="text.secondary">No pudimos cargar el menú en este momento.</Text>
-          <Button onClick={recargar} bg="accent.500" color="black" _hover={{ bg: "accent.400" }}>
+          <Button onClick={recargar} bg="accent.500" color="white" _hover={{ bg: "accent.600" }}>
             Reintentar
           </Button>
         </Flex>
@@ -80,10 +80,10 @@ export function MenuSeccion({ onAgregar }: MenuSeccionProps) {
                   borderRadius="full"
                   fontWeight="700"
                   bg={activa ? "accent.500" : "bg.surface"}
-                  color={activa ? "black" : "white"}
+                  color={activa ? "white" : "text.primary"}
                   border="1px solid"
                   borderColor={activa ? "accent.500" : "border.subtle"}
-                  _hover={{ bg: activa ? "accent.400" : "bg.inset" }}
+                  _hover={{ bg: activa ? "accent.600" : "bg.inset" }}
                   onClick={() => setCategoriaElegida(c.id_categoria)}
                 >
                   {c.nombre}
@@ -120,7 +120,7 @@ export function MenuSeccion({ onAgregar }: MenuSeccionProps) {
                     )}
                   </Box>
                   <Flex direction="column" flex="1" p={4} gap={1}>
-                    <Text color="white" fontWeight="800" fontSize="lg" lineHeight="1.2">
+                    <Text color="text.primary" fontWeight="800" fontSize="lg" lineHeight="1.2">
                       {p.nombre}
                     </Text>
                     {p.descripcion && (
@@ -129,7 +129,7 @@ export function MenuSeccion({ onAgregar }: MenuSeccionProps) {
                       </Text>
                     )}
                     <Flex mt="auto" pt={3} align="center" justify="space-between" gap={3}>
-                      <Text color="accent.400" fontWeight="800" fontSize="lg">
+                      <Text color="accent.500" fontWeight="800" fontSize="lg">
                         {formatoMoneda(p.precio)}
                       </Text>
                       <Button
@@ -138,9 +138,9 @@ export function MenuSeccion({ onAgregar }: MenuSeccionProps) {
                         px={4}
                         borderRadius="full"
                         bg="accent.500"
-                        color="black"
+                        color="white"
                         fontWeight="700"
-                        _hover={{ bg: "accent.400" }}
+                        _hover={{ bg: "accent.600" }}
                         onClick={() => setProductoAPersonalizar(p)}
                         aria-label={`Agregar ${p.nombre} al pedido`}
                       >

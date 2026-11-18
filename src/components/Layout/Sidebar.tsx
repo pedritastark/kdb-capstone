@@ -109,7 +109,7 @@ export function Sidebar() {
                 borderRadius="8px"
                 borderLeft="3px solid"
                 borderColor={isActive ? color : "transparent"}
-                color={isActive ? color : "text.secondary"}
+                color={isActive ? color.replace(".500", ".600") : "text.secondary"}
                 bg={isActive ? `${color}/12` : "transparent"}
                 fontWeight={isActive ? "700" : "500"}
                 _hover={{ bg: "bg.inset", color: "text.primary" }}

@@ -29,7 +29,7 @@ export function CartBar({ totalItems, total, onVerPedido }: CartBarProps) {
         color="white"
         _hover={{ bg: "accent.600" }}
         onClick={onVerPedido}
-        boxShadow="0 4px 20px rgba(0,0,0,0.4)"
+        boxShadow="0 4px 20px rgba(0,0,0,0.22)"
       >
         <Flex justify="space-between" align="center" w="full" px={2}>
           <Flex align="center" gap={2}>

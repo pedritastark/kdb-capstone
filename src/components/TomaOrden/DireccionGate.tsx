@@ -31,7 +31,7 @@ export function DireccionGate({ onConfirmar, onVolver }: DireccionGateProps) {
           <Text fontSize="40px">🛵</Text>
         </Flex>
 
-        <Text fontFamily="heading" letterSpacing="wide" fontSize="xl" color="white" mb={1}>
+        <Text fontFamily="heading" letterSpacing="wide" fontSize="xl" color="text.primary" mb={1}>
           ¿A dónde lo llevamos?
         </Text>
         <Text color="text.secondary" fontSize="sm" mb={6}>
@@ -69,8 +69,8 @@ export function DireccionGate({ onConfirmar, onVolver }: DireccionGateProps) {
           h="56px"
           fontSize="md"
           bg="sky.500"
-          color="black"
-          _hover={{ bg: "sky.400" }}
+          color="white"
+          _hover={{ bg: "sky.600" }}
           onClick={continuar}
           disabled={!direccion.trim()}
         >
