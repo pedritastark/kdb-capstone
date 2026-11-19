@@ -2,6 +2,7 @@ import { Box, Button, Drawer, Flex, Portal, Text } from "@chakra-ui/react";
 import { FaWhatsapp } from "react-icons/fa";
 import { FiMinus, FiPlus, FiTrash2, FiX } from "react-icons/fi";
 import { detalleLinea, totalLinea, type LineaCarrito } from "../../lib/carrito";
+import { COSTO_DOMICILIO } from "../../config/negocio";
 import { formatoMoneda } from "../../utils/format";
 
 interface CarritoDrawerProps {
@@ -137,12 +138,15 @@ export function CarritoDrawer({
               <Drawer.Footer flexDirection="column" alignItems="stretch" gap={3} borderTop="1px solid" borderColor="border.subtle" pt={4}>
                 <Flex justify="space-between" align="baseline" w="full">
                   <Text color="text.secondary" fontSize="sm">
-                    Total · domicilio sin costo
+                    Subtotal
                   </Text>
                   <Text color="text.primary" fontWeight="800" fontSize="2xl">
                     {formatoMoneda(total)}
                   </Text>
                 </Flex>
+                <Text color="text.secondary" fontSize="xs" mt={-1}>
+                  + Domicilio {formatoMoneda(COSTO_DOMICILIO)} (sin costo si recoges en el local)
+                </Text>
                 <Button
                   w="full"
                   h="56px"

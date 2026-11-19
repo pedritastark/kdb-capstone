@@ -14,9 +14,14 @@ export type EstadoPedido =
   | "cancelado";
 export type MedioPago = "efectivo" | "nequi" | "daviplata" | "llave";
 
-// El domicilio no se cobra (decisión del negocio). La columna costo_domicilio
-// se conserva por si más adelante se vuelve a cobrar.
-const COSTO_DOMICILIO_FIJO = 0;
+// Costo fijo del domicilio (recoger en el local no se cobra). Configurable con
+// la variable de entorno COSTO_DOMICILIO; por defecto $5.000.
+export const COSTO_DOMICILIO_FIJO = (() => {
+  const n = Number(process.env.COSTO_DOMICILIO);
+  return process.env.COSTO_DOMICILIO !== undefined && process.env.COSTO_DOMICILIO !== "" && Number.isFinite(n) && n >= 0
+    ? Math.round(n)
+    : 5000;
+})();
 
 /**
  * Misma máquina de estados que siguienteEstado() en src/hooks/usePedidos.tsx

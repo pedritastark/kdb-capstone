@@ -17,6 +17,12 @@ export const NEGOCIO = {
   whatsappUrl: leer(env.VITE_WHATSAPP_URL),
 };
 
+/** Costo del domicilio (recoger en el local no se cobra). Debe coincidir con COSTO_DOMICILIO de la API (por defecto 5000). */
+export const COSTO_DOMICILIO = (() => {
+  const n = Number(leer(env.VITE_COSTO_DOMICILIO));
+  return leer(env.VITE_COSTO_DOMICILIO) !== "" && Number.isFinite(n) && n >= 0 ? Math.round(n) : 5000;
+})();
+
 export const soloDigitos = (s: string) => s.replace(/[^\d+]/g, "");
 
 export const urlMapaEmbed = (direccion: string) =>

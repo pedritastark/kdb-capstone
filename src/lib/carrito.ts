@@ -1,4 +1,5 @@
 import type { OpcionProducto, Producto } from "../types";
+import { COSTO_DOMICILIO } from "../config/negocio";
 import { formatoMoneda } from "../utils/format";
 
 /** Una línea del carrito de la landing: producto + personalización + cantidad. */
@@ -110,7 +111,8 @@ export function mensajeWhatsApp(c: LineaCarrito[]): string {
     "",
     ...lineas,
     "",
-    `Total: ${formatoMoneda(totalCarrito(c))} (domicilio sin costo)`,
+    `Subtotal: ${formatoMoneda(totalCarrito(c))}`,
+    `Domicilio: ${formatoMoneda(COSTO_DOMICILIO)} (sin costo si recoges en el local)`,
     "",
     "Mis datos te los paso a continuación.",
   ].join("\n");

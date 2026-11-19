@@ -3,7 +3,7 @@ import { Link as RouterLink, useNavigate } from "react-router-dom";
 import { Box, Flex, Grid, Text } from "@chakra-ui/react";
 import { FaWhatsapp } from "react-icons/fa";
 import { FiClock, FiMapPin, FiMessageCircle, FiNavigation, FiPhone } from "react-icons/fi";
-import { NEGOCIO, soloDigitos, urlComoLlegar, urlMapaEmbed } from "../config/negocio";
+import { COSTO_DOMICILIO, NEGOCIO, soloDigitos, urlComoLlegar, urlMapaEmbed } from "../config/negocio";
 import { useCarritoLanding } from "../hooks/useCarritoLanding";
 import { itemsParaApi, mensajeWhatsApp, urlWhatsAppConPedido } from "../lib/carrito";
 import { formatoMoneda } from "../utils/format";
@@ -31,7 +31,7 @@ const DESTACADOS: { img: string; nombre: string; pos?: string }[] = [
 const PASOS = [
   { n: "1", titulo: "Arma tu pedido", texto: "Elige del menú, quita ingredientes o agrega extras y cambia cantidades." },
   { n: "2", titulo: "Haz la orden", texto: "Te llevamos a WhatsApp con tu pedido ya escrito: solo faltan tus datos." },
-  { n: "3", titulo: "Recíbelo o recógelo", texto: "A tu puerta sin costo, o pasa por él al local. Pagas al recibir." },
+  { n: "3", titulo: "Recíbelo o recógelo", texto: "A tu puerta (domicilio $5.000), o pasa por él al local sin costo. Pagas al recibir." },
 ];
 
 /** Botón de WhatsApp: abre WhatsApp si hay enlace configurado; si no, el chatbot web. */
@@ -185,8 +185,8 @@ export function LandingPage() {
             TACOS DE BIRRIA, PASTOR Y MUCHO ANTOJO
           </Text>
           <Text color="text.secondary" fontSize={{ base: "md", md: "xl" }} mt={5} maxW="620px">
-            Antojitos mexicanos hechos al momento. Pide en un minuto: domicilio sin costo y sin pedido mínimo, o pasa a
-            recogerlo.
+            Antojitos mexicanos hechos al momento. Pide en un minuto: domicilio por {formatoMoneda(COSTO_DOMICILIO)} y sin pedido mínimo, o pasa a
+            recogerlo sin costo.
           </Text>
           <Flex direction={{ base: "column", sm: "row" }} gap={4} mt={9} w={{ base: "full", sm: "auto" }}>
             <BotonWhatsApp grande />
@@ -329,7 +329,7 @@ export function LandingPage() {
               )}
             </DatoContacto>
             <DatoContacto icono="🛵" titulo="Domicilio">
-              <Text>Sin costo y sin pedido mínimo. También puedes recoger en el local.</Text>
+              <Text>{formatoMoneda(COSTO_DOMICILIO)} y sin pedido mínimo. Si recoges en el local no se cobra.</Text>
             </DatoContacto>
           </Flex>
 
