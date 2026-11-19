@@ -1,6 +1,6 @@
-import { useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Box, Button, Flex, Grid, Text } from "@chakra-ui/react";
-import { FiPlus } from "react-icons/fi";
+import { FiChevronLeft, FiChevronRight, FiPlus } from "react-icons/fi";
 import { useProductos } from "../../hooks/useProductos";
 import { PersonalizarModal, type Personalizacion } from "../TomaOrden/PersonalizarModal";
 import { resolveImageUrl } from "../../lib/images";
@@ -10,6 +10,8 @@ import type { Producto } from "../../types";
 interface MenuSeccionProps {
   onAgregar: (producto: Producto, personalizacion: Personalizacion, cantidad: number) => void;
 }
+
+const TODO = "todo";
 
 function Esqueleto() {
   return (
@@ -32,11 +34,33 @@ export function MenuSeccion({ onAgregar }: MenuSeccionProps) {
     () => categorias.filter((c) => c.activa && disponibles.some((p) => p.id_categoria === c.id_categoria)),
     [categorias, disponibles],
   );
+  // "todo" = sin filtrar; es la opción por defecto.
   const categoriaActiva =
     categoriaElegida && categoriasConProductos.some((c) => c.id_categoria === categoriaElegida)
       ? categoriaElegida
-      : (categoriasConProductos[0]?.id_categoria ?? null);
-  const visibles = disponibles.filter((p) => p.id_categoria === categoriaActiva);
+      : TODO;
+  const visibles =
+    categoriaActiva === TODO
+      ? categoriasConProductos.flatMap((c) => disponibles.filter((p) => p.id_categoria === c.id_categoria))
+      : disponibles.filter((p) => p.id_categoria === categoriaActiva);
+
+  // Flechas del carrusel de categorías: en computador no se puede arrastrar.
+  const tabsRef = useRef<HTMLDivElement>(null);
+  const [puedeIzq, setPuedeIzq] = useState(false);
+  const [puedeDer, setPuedeDer] = useState(false);
+  const medirTabs = useCallback(() => {
+    const el = tabsRef.current;
+    if (!el) return;
+    setPuedeIzq(el.scrollLeft > 4);
+    setPuedeDer(el.scrollLeft + el.clientWidth < el.scrollWidth - 4);
+  }, []);
+  useEffect(() => {
+    medirTabs();
+    window.addEventListener("resize", medirTabs);
+    return () => window.removeEventListener("resize", medirTabs);
+  }, [medirTabs, categoriasConProductos.length]);
+  const desplazar = (dir: -1 | 1) =>
+    tabsRef.current?.scrollBy({ left: dir * Math.max(200, tabsRef.current.clientWidth * 0.7), behavior: "smooth" });
 
   return (
     <>
@@ -66,31 +90,64 @@ export function MenuSeccion({ onAgregar }: MenuSeccionProps) {
 
       {!cargando && !errorCarga && categoriasConProductos.length > 0 && (
         <>
-          <Flex gap={2} overflowX="auto" pb={3} mb={4} role="tablist" aria-label="Categorías del menú" css={{ scrollbarWidth: "none" }}>
-            {categoriasConProductos.map((c) => {
-              const activa = c.id_categoria === categoriaActiva;
-              return (
-                <Button
-                  key={c.id_categoria}
-                  role="tab"
-                  aria-selected={activa}
-                  flexShrink={0}
-                  h="42px"
-                  px={5}
-                  borderRadius="full"
-                  fontWeight="700"
-                  bg={activa ? "accent.500" : "bg.surface"}
-                  color={activa ? "white" : "text.primary"}
-                  border="1px solid"
-                  borderColor={activa ? "accent.500" : "border.subtle"}
-                  _hover={{ bg: activa ? "accent.600" : "bg.inset" }}
-                  onClick={() => setCategoriaElegida(c.id_categoria)}
-                >
-                  {c.nombre}
-                </Button>
-              );
-            })}
-          </Flex>
+          <Box position="relative" mb={4}>
+            {puedeIzq && (
+              <Button
+                aria-label="Ver categorías anteriores"
+                position="absolute" left="-6px" top="0" zIndex={2} h="42px" w="42px" minW="42px" p={0}
+                borderRadius="full" bg="bg.surface" color="text.primary" border="1px solid" borderColor="border.subtle"
+                boxShadow="0 2px 8px rgba(0,0,0,0.15)" _hover={{ bg: "bg.inset" }}
+                onClick={() => desplazar(-1)}
+              >
+                <FiChevronLeft />
+              </Button>
+            )}
+            {puedeDer && (
+              <Button
+                aria-label="Ver más categorías"
+                position="absolute" right="-6px" top="0" zIndex={2} h="42px" w="42px" minW="42px" p={0}
+                borderRadius="full" bg="bg.surface" color="text.primary" border="1px solid" borderColor="border.subtle"
+                boxShadow="0 2px 8px rgba(0,0,0,0.15)" _hover={{ bg: "bg.inset" }}
+                onClick={() => desplazar(1)}
+              >
+                <FiChevronRight />
+              </Button>
+            )}
+            <Flex
+              ref={tabsRef}
+              onScroll={medirTabs}
+              gap={2}
+              overflowX="auto"
+              pb={3}
+              role="tablist"
+              aria-label="Categorías del menú"
+              css={{ scrollbarWidth: "none", "&::-webkit-scrollbar": { display: "none" } }}
+            >
+              {[{ id_categoria: TODO, nombre: "Todo" }, ...categoriasConProductos].map((c) => {
+                const activa = c.id_categoria === categoriaActiva;
+                return (
+                  <Button
+                    key={c.id_categoria}
+                    role="tab"
+                    aria-selected={activa}
+                    flexShrink={0}
+                    h="42px"
+                    px={5}
+                    borderRadius="full"
+                    fontWeight="700"
+                    bg={activa ? "accent.500" : "bg.surface"}
+                    color={activa ? "white" : "text.primary"}
+                    border="1px solid"
+                    borderColor={activa ? "accent.500" : "border.subtle"}
+                    _hover={{ bg: activa ? "accent.600" : "bg.inset" }}
+                    onClick={() => setCategoriaElegida(c.id_categoria)}
+                  >
+                    {c.nombre}
+                  </Button>
+                );
+              })}
+            </Flex>
+          </Box>
 
           <Grid templateColumns={{ base: "1fr", sm: "repeat(2, 1fr)", lg: "repeat(3, 1fr)" }} gap={4}>
             {visibles.map((p) => {
