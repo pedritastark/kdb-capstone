@@ -45,6 +45,8 @@ export interface Producto {
   fecha_creacion: string;
   activo: boolean;
   imagen_url: string;
+  /** Cuántos ingredientes tiene su receta (0 = plato sin receta). Lo trae GET /productos. */
+  n_ingredientes?: number;
 }
 
 export type TipoOpcion = "proteina" | "salsa" | "picante" | "adicional";

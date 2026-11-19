@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { z } from "zod";
-import { pool } from "../db";
+import { pool, withTransaction } from "../db";
 import { requireAuth } from "../middleware/auth";
 import { asyncHandler, ApiError } from "../middleware/errorHandler";
 
@@ -10,7 +10,12 @@ export const productosRouter = Router();
 productosRouter.get(
   "/",
   asyncHandler(async (_req, res) => {
-    const { rows: productos } = await pool.query(`SELECT * FROM productos ORDER BY nombre`);
+    const { rows: productos } = await pool.query(
+      `SELECT p.*,
+              (SELECT count(*) FROM producto_ingredientes pi WHERE pi.id_producto = p.id_producto)::int AS n_ingredientes
+       FROM productos p
+       ORDER BY p.nombre`,
+    );
     const { rows: opciones } = await pool.query(`SELECT * FROM opciones_producto ORDER BY tipo, nombre`);
     const porProducto = new Map<string, unknown[]>();
     for (const o of opciones) {
@@ -105,6 +110,77 @@ productosRouter.get(
       [req.params.id],
     );
     res.json(rows);
+  }),
+);
+
+const recetaSchema = z.object({
+  ingredientes: z
+    .array(
+      z.object({
+        id_ingrediente: z.string().uuid(),
+        cantidad_requerida: z.number().positive().max(100000),
+      }),
+    )
+    .max(80),
+});
+
+const RECETA_SQL = `SELECT i.*, pi.cantidad_requerida
+  FROM producto_ingredientes pi
+  JOIN ingredientes i USING (id_ingrediente)
+  WHERE pi.id_producto = $1
+  ORDER BY i.nombre`;
+
+// Reemplaza la receta COMPLETA de un plato (qué ingredientes lleva y cuánto consume
+// cada unidad vendida). Todo en una transacción: o queda la receta nueva entera o
+// la anterior. Los triggers de la base (0009) recalculan solos si el plato queda
+// disponible según el stock. Lista vacía = plato sin receta (no descuenta inventario).
+productosRouter.put(
+  "/:id/ingredientes",
+  requireAuth,
+  asyncHandler(async (req, res) => {
+    const idProducto = z.string().uuid().safeParse(req.params.id);
+    if (!idProducto.success) throw new ApiError(404, "Producto no encontrado");
+    const { ingredientes } = recetaSchema.parse(req.body);
+
+    // NUMERIC(10,3): se redondea a 3 decimales, y no puede quedar en 0
+    const lineas = ingredientes.map((i) => ({
+      id: i.id_ingrediente,
+      cantidad: Math.round(i.cantidad_requerida * 1000) / 1000,
+    }));
+    if (lineas.some((l) => l.cantidad <= 0)) {
+      throw new ApiError(400, "La cantidad de cada ingrediente debe ser mayor a 0");
+    }
+    if (new Set(lineas.map((l) => l.id)).size !== lineas.length) {
+      throw new ApiError(400, "Un ingrediente no puede repetirse en la receta");
+    }
+
+    const receta = await withTransaction(async (client) => {
+      const { rows: producto } = await client.query(
+        `SELECT 1 FROM productos WHERE id_producto = $1 FOR UPDATE`,
+        [idProducto.data],
+      );
+      if (!producto[0]) throw new ApiError(404, "Producto no encontrado");
+
+      if (lineas.length) {
+        const { rows: existentes } = await client.query(
+          `SELECT id_ingrediente FROM ingredientes WHERE id_ingrediente = ANY($1::uuid[])`,
+          [lineas.map((l) => l.id)],
+        );
+        if (existentes.length !== lineas.length) throw new ApiError(400, "Alguno de los ingredientes no existe");
+      }
+
+      await client.query(`DELETE FROM producto_ingredientes WHERE id_producto = $1`, [idProducto.data]);
+      for (const l of lineas) {
+        await client.query(
+          `INSERT INTO producto_ingredientes (id_producto, id_ingrediente, cantidad_requerida) VALUES ($1, $2, $3)`,
+          [idProducto.data, l.id, l.cantidad],
+        );
+      }
+      const { rows } = await client.query(RECETA_SQL, [idProducto.data]);
+      return rows;
+    });
+
+    res.json(receta);
   }),
 );
 

@@ -1,6 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from "react";
 import { apiClient } from "../lib/apiClient";
 import { useAuth } from "./useAuth";
+import { useProductos } from "./useProductos";
 import type { Ingrediente, MovimientoInventario, TipoMovimientoInventario } from "../types";
 
 interface RegistrarMovimientoInput {
@@ -11,13 +12,23 @@ interface RegistrarMovimientoInput {
   id_pedido?: string | null;
 }
 
-type IngredienteConCantidad = Ingrediente & { cantidad_requerida: number };
+export type IngredienteConCantidad = Ingrediente & { cantidad_requerida: number };
+
+/** Una línea de receta: cuánto de un ingrediente consume UNA unidad vendida del plato. */
+export interface LineaReceta {
+  id_ingrediente: string;
+  cantidad_requerida: number;
+}
 
 interface InventarioContextValue {
   ingredientes: Ingrediente[];
   movimientos: MovimientoInventario[];
   movimientosDe: (idIngrediente: string) => MovimientoInventario[];
   ingredientesDeProducto: (idProducto: string) => IngredienteConCantidad[];
+  /** false mientras la receta del plato aún se está cargando (la lista vacía no significa "sin receta"). */
+  recetaCargada: (idProducto: string) => boolean;
+  /** Reemplaza la receta completa del plato. */
+  guardarReceta: (idProducto: string, lineas: LineaReceta[]) => Promise<void>;
   toggleDisponible: (idIngrediente: string) => Promise<void>;
   registrarMovimiento: (input: RegistrarMovimientoInput) => Promise<void>;
   crearIngrediente: (input: IngredienteInput) => Promise<Ingrediente>;
@@ -35,6 +46,7 @@ const InventarioContext = createContext<InventarioContextValue | undefined>(unde
 
 export function InventarioProvider({ children }: { children: ReactNode }) {
   const { estaAutenticado } = useAuth();
+  const { recargar: recargarProductos } = useProductos();
   const [ingredientes, setIngredientes] = useState<Ingrediente[]>([]);
   const [movimientosPorIngrediente, setMovimientosPorIngrediente] = useState<
     Record<string, MovimientoInventario[]>
@@ -76,6 +88,21 @@ export function InventarioProvider({ children }: { children: ReactNode }) {
     }
     return cache;
   };
+
+  const recetaCargada = (idProducto: string): boolean => ingredientesPorProducto[idProducto] !== undefined;
+
+  const guardarReceta = useCallback(
+    async (idProducto: string, lineas: LineaReceta[]) => {
+      const receta = await apiClient.put<IngredienteConCantidad[]>(`/productos/${idProducto}/ingredientes`, {
+        ingredientes: lineas,
+      });
+      setIngredientesPorProducto((prev) => ({ ...prev, [idProducto]: receta }));
+      // La base recalcula si el plato queda disponible según el stock, y n_ingredientes cambió:
+      // se relee el menú para reflejarlo.
+      recargarProductos();
+    },
+    [recargarProductos],
+  );
 
   const toggleDisponible = useCallback(async (idIngrediente: string) => {
     const actual = ingredientes.find((i) => i.id_ingrediente === idIngrediente);
@@ -121,6 +148,8 @@ export function InventarioProvider({ children }: { children: ReactNode }) {
         movimientos,
         movimientosDe,
         ingredientesDeProducto,
+        recetaCargada,
+        guardarReceta,
         toggleDisponible,
         registrarMovimiento,
         crearIngrediente,
