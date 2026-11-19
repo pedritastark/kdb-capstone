@@ -126,10 +126,16 @@ function emojiCategoria(nombre: string): string {
   if (n.includes("taco")) return "🌮";
   if (n.includes("burrito")) return "🌯";
   if (n.includes("quesadilla")) return "🧀";
+  if (n.includes("enchilada")) return "🫔";
+  if (n.includes("alita")) return "🍗";
+  if (n.includes("perro")) return "🌭";
+  if (n.includes("hamburguesa")) return "🍔";
+  if (n.includes("combo")) return "🍱";
+  if (n.includes("especial")) return "⭐";
   if (n.includes("bebida")) return "🥤";
   if (n.includes("postre")) return "🍰";
-  if (n.includes("adicional")) return "🍟";
-  if (n.includes("antojito")) return "🥟";
+  if (n.includes("adicion") || n.includes("adicional")) return "🍟";
+  if (n.includes("mexican") || n.includes("antojito")) return "🥑";
   if (n.includes("plato")) return "🍽️";
   return "🍴";
 }
@@ -268,7 +274,7 @@ async function preguntar(e: Estado, prefijo: string[] = []): Promise<Respuesta> 
          WHERE c.activa AND EXISTS (
            SELECT 1 FROM productos p
            WHERE p.id_categoria = c.id_categoria AND p.activo AND p.disponible)
-         ORDER BY c.created_at, c.nombre`,
+         ORDER BY c.orden, c.nombre`,
       );
       const estado: Estado = { ...e, tmp: { ...e.tmp, lista: rows.map((r) => r.id_categoria) } };
       const opciones: Opcion[] = rows.map((r, i) => ({

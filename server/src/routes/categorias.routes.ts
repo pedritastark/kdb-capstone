@@ -10,7 +10,7 @@ export const categoriasRouter = Router();
 categoriasRouter.get(
   "/",
   asyncHandler(async (_req, res) => {
-    const { rows } = await pool.query(`SELECT * FROM categorias ORDER BY nombre`);
+    const { rows } = await pool.query(`SELECT * FROM categorias ORDER BY orden, nombre`);
     res.json(rows);
   }),
 );

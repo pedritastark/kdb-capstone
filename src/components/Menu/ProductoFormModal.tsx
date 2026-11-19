@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Box,
   Button,
@@ -13,10 +13,10 @@ import {
   Textarea,
   VStack,
 } from "@chakra-ui/react";
-import { FiImage, FiUpload, FiX } from "react-icons/fi";
+import { FiX } from "react-icons/fi";
 import type { Producto, TipoOpcion } from "../../types";
 import { useProductos } from "../../hooks/useProductos";
-import { resolveImageUrl, subirImagen } from "../../lib/images";
+import { FotoPicker } from "../Shared/FotoPicker";
 import { formatoMoneda } from "../../utils/format";
 
 interface ProductoFormModalProps {
@@ -34,7 +34,7 @@ const TIPO_OPCION_LABEL: Record<TipoOpcion, string> = {
 };
 
 const vacio = {
-  id_categoria: "cat1",
+  id_categoria: "",
   nombre: "",
   descripcion: "",
   precio: 0,
@@ -49,11 +49,11 @@ export function ProductoFormModal({ producto, abierto, onClose }: ProductoFormMo
   const [form, setForm] = useState(vacio);
   const [nuevaOpcion, setNuevaOpcion] = useState({ tipo: "adicional" as TipoOpcion, nombre: "", precio_adicional: 0, obligatoria: false });
   const [subiendoFoto, setSubiendoFoto] = useState(false);
-  const [errorFoto, setErrorFoto] = useState<string | null>(null);
-  const inputFotoRef = useRef<HTMLInputElement>(null);
+  const [guardando, setGuardando] = useState(false);
+  const [errorGuardar, setErrorGuardar] = useState<string | null>(null);
 
   useEffect(() => {
-    setErrorFoto(null);
+    setErrorGuardar(null);
     if (producto) {
       setForm({
         id_categoria: producto.id_categoria,
@@ -66,34 +66,33 @@ export function ProductoFormModal({ producto, abierto, onClose }: ProductoFormMo
         imagen_url: producto.imagen_url,
       });
     } else {
-      setForm(vacio);
+      // Producto nuevo: arranca en la primera categoría real (antes quedaba un id
+      // de prueba "cat1" que la API rechazaba y el producto no se creaba).
+      setForm({ ...vacio, id_categoria: categorias.find((c) => c.activa)?.id_categoria ?? categorias[0]?.id_categoria ?? "" });
     }
-  }, [producto, abierto]);
+  }, [producto, abierto, categorias]);
 
   const opciones = producto ? opcionesDe(producto.id_producto) : [];
-  const fotoActual = resolveImageUrl(form.imagen_url);
 
-  const handleCambiarFoto = async (archivo: File) => {
-    setErrorFoto(null);
-    setSubiendoFoto(true);
+  const handleGuardar = async () => {
+    if (subiendoFoto || guardando) return;
+    if (!form.nombre.trim()) return setErrorGuardar("Escribe el nombre del producto.");
+    if (form.precio <= 0) return setErrorGuardar("El precio debe ser mayor a 0.");
+    if (!form.id_categoria) return setErrorGuardar("Elige una categoría.");
+    setErrorGuardar(null);
+    setGuardando(true);
     try {
-      const url = await subirImagen(archivo);
-      setForm((f) => ({ ...f, imagen_url: url }));
+      if (producto) {
+        await guardarProducto({ ...producto, ...form, nombre: form.nombre.trim() });
+      } else {
+        await crearProducto({ ...form, nombre: form.nombre.trim() });
+      }
+      onClose(); // solo se cierra si la API lo guardó
     } catch (err) {
-      setErrorFoto(err instanceof Error ? err.message : "No se pudo subir la foto");
+      setErrorGuardar(err instanceof Error ? `No se pudo guardar: ${err.message}` : "No se pudo guardar el producto.");
     } finally {
-      setSubiendoFoto(false);
+      setGuardando(false);
     }
-  };
-
-  const handleGuardar = () => {
-    if (subiendoFoto || !form.nombre.trim() || form.precio <= 0) return;
-    if (producto) {
-      guardarProducto({ ...producto, ...form });
-    } else {
-      crearProducto({ ...form });
-    }
-    onClose();
   };
 
   const handleAgregarOpcion = () => {
@@ -126,59 +125,18 @@ export function ProductoFormModal({ producto, abierto, onClose }: ProductoFormMo
 
             <Dialog.Body>
               <VStack align="stretch" gap={4} py={2}>
-                <Flex gap={4} align="center">
-                  <Box
-                    w="112px"
-                    h="112px"
-                    flexShrink={0}
-                    borderRadius="10px"
-                    overflow="hidden"
-                    bg="bg.inset"
-                    border="1px solid"
-                    borderColor="border.subtle"
-                    display="flex"
-                    alignItems="center"
-                    justifyContent="center"
-                    color="text.tertiary"
-                  >
-                    {fotoActual ? (
-                      <img src={fotoActual} alt={form.nombre || "Foto del producto"} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-                    ) : (
-                      <FiImage size={32} />
-                    )}
-                  </Box>
-                  <Box>
-                    <input
-                      ref={inputFotoRef}
-                      type="file"
-                      accept="image/*"
-                      hidden
-                      onChange={(e) => {
-                        const archivo = e.target.files?.[0];
-                        e.target.value = ""; // permite volver a elegir el mismo archivo
-                        if (archivo) void handleCambiarFoto(archivo);
-                      }}
-                    />
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      borderColor="border.subtle"
-                      onClick={() => inputFotoRef.current?.click()}
-                      loading={subiendoFoto}
-                      loadingText="Subiendo…"
-                    >
-                      <FiUpload /> {fotoActual ? "Cambiar foto" : "Subir foto"}
-                    </Button>
-                    <Text fontSize="xs" color="text.tertiary" mt={2}>
-                      JPG, PNG o WebP. Se ve en el menú al darle Guardar.
-                    </Text>
-                    {errorFoto && (
-                      <Text fontSize="xs" color="danger.500" mt={1}>
-                        {errorFoto}
-                      </Text>
-                    )}
-                  </Box>
-                </Flex>
+                <FotoPicker
+                  valor={form.imagen_url}
+                  onCambio={(url) => setForm((f) => ({ ...f, imagen_url: url }))}
+                  onSubiendo={setSubiendoFoto}
+                  alt={form.nombre || "Foto del producto"}
+                />
+
+                {errorGuardar && (
+                  <Text fontSize="sm" color="danger.500" bg="bg.inset" borderRadius="6px" px={3} py={2}>
+                    {errorGuardar}
+                  </Text>
+                )}
 
                 <Field.Root>
                   <Field.Label fontSize="sm" color="text.secondary">Nombre</Field.Label>
@@ -353,7 +311,7 @@ export function ProductoFormModal({ producto, abierto, onClose }: ProductoFormMo
               <Button variant="ghost" color="text.secondary" onClick={onClose}>
                 Cancelar
               </Button>
-              <Button bg="accent.500" color="white" _hover={{ bg: "accent.600" }} onClick={handleGuardar} disabled={subiendoFoto}>
+              <Button bg="accent.500" color="white" _hover={{ bg: "accent.600" }} onClick={handleGuardar} disabled={subiendoFoto} loading={guardando}>
                 Guardar
               </Button>
             </Dialog.Footer>

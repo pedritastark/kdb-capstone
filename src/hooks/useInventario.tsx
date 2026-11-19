@@ -20,7 +20,16 @@ interface InventarioContextValue {
   ingredientesDeProducto: (idProducto: string) => IngredienteConCantidad[];
   toggleDisponible: (idIngrediente: string) => Promise<void>;
   registrarMovimiento: (input: RegistrarMovimientoInput) => Promise<void>;
+  crearIngrediente: (input: IngredienteInput) => Promise<Ingrediente>;
+  guardarIngrediente: (idIngrediente: string, input: IngredienteInput) => Promise<Ingrediente>;
 }
+
+/** Campos editables de un ingrediente. cantidad_actual solo cuenta al crear:
+ * después el stock cambia únicamente con movimientos (entrada, consumo...). */
+export type IngredienteInput = Pick<
+  Ingrediente,
+  "nombre" | "unidad_medida" | "tipo_control" | "cantidad_actual" | "cantidad_minima" | "disponible" | "activo" | "imagen_url"
+>;
 
 const InventarioContext = createContext<InventarioContextValue | undefined>(undefined);
 
@@ -91,6 +100,18 @@ export function InventarioProvider({ children }: { children: ReactNode }) {
     setIngredientes(actualizado);
   }, []);
 
+  const crearIngrediente = useCallback(async (input: IngredienteInput) => {
+    const nuevo = await apiClient.post<Ingrediente>("/ingredientes", input);
+    setIngredientes((prev) => [...prev, nuevo].sort((a, b) => a.nombre.localeCompare(b.nombre, "es")));
+    return nuevo;
+  }, []);
+
+  const guardarIngrediente = useCallback(async (idIngrediente: string, input: IngredienteInput) => {
+    const actualizado = await apiClient.put<Ingrediente>(`/ingredientes/${idIngrediente}`, input);
+    setIngredientes((prev) => prev.map((i) => (i.id_ingrediente === idIngrediente ? actualizado : i)));
+    return actualizado;
+  }, []);
+
   const movimientos = Object.values(movimientosPorIngrediente).flat();
 
   return (
@@ -102,6 +123,8 @@ export function InventarioProvider({ children }: { children: ReactNode }) {
         ingredientesDeProducto,
         toggleDisponible,
         registrarMovimiento,
+        crearIngrediente,
+        guardarIngrediente,
       }}
     >
       {children}

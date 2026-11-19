@@ -1,7 +1,8 @@
 import { Box, Grid, Text } from "@chakra-ui/react";
 import type { Categoria } from "../../types";
 import { resolveImageUrl } from "../../lib/images";
-import { estiloCategoria } from "./shared";
+import { useProductos } from "../../hooks/useProductos";
+import { estiloCategoria, fotoDeCategoria } from "./shared";
 
 interface CategoriasViewProps {
   categorias: Categoria[];
@@ -9,6 +10,7 @@ interface CategoriasViewProps {
 }
 
 export function CategoriasView({ categorias, onSeleccionar }: CategoriasViewProps) {
+  const { productos } = useProductos();
   return (
     <Box px={5} pt={6} pb={28}>
       <Text fontSize="2xl" fontWeight="800" color="text.primary" mb={1}>
@@ -21,7 +23,7 @@ export function CategoriasView({ categorias, onSeleccionar }: CategoriasViewProp
       <Grid templateColumns="repeat(2, 1fr)" gap={4}>
         {categorias.map((c, i) => {
           const estilo = estiloCategoria(c.nombre, i);
-          const imagen = resolveImageUrl(estilo.imagen);
+          const imagen = resolveImageUrl(fotoDeCategoria(estilo, c.id_categoria, productos));
           return (
             <Box
               key={c.id_categoria}

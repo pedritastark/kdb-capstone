@@ -445,3 +445,35 @@ INSERT INTO notificaciones (id_notificacion, id_pedido, destinatario, tipo, mens
   ('90000000-0000-0000-0000-000000000003', '30000000-0000-0000-0000-000000000002', 'cocina', 'nuevo_pedido',    'Nuevo pedido DT-1002 recibido',      'no_leida', now() - INTERVAL '20 minutes'),
   ('90000000-0000-0000-0000-000000000004', NULL,                                    'caja',   'inventario_bajo', 'Cilantro por debajo del mínimo',     'no_leida', now() - INTERVAL '10 minutes')
 ON CONFLICT DO NOTHING;
+
+-- ── Categorías del menú (nov 2026) ────────────────────────────────────────
+-- Reorganiza el menú en las categorías que usa el local. Idempotente (ids fijos,
+-- ON CONFLICT / UPDATE): se puede correr de nuevo sin duplicar nada.
+--   * "Antojitos para Compartir" -> "Platos mexicanos" (conserva sus productos)
+--   * "Platos Fuertes"           -> "Plato fuerte"
+--   * Bebidas se conserva, al final.
+--   * Alitas, enchiladas, perros y hamburguesas pasan a su propia categoría.
+UPDATE categorias SET nombre = 'Platos mexicanos', descripcion = 'Antojitos y platos mexicanos para compartir', orden = 1
+  WHERE id_categoria = '6280f3ec-852b-58db-adc2-688cbfab895c';
+UPDATE categorias SET nombre = 'Plato fuerte', descripcion = 'Platos principales de mayor tamaño', orden = 4
+  WHERE id_categoria = 'f8ef7307-7ed5-574c-8951-fb49e596d056';
+UPDATE categorias SET orden = 5  WHERE id_categoria = 'cd762a21-6117-550d-ab6b-305ad012853b'; -- Postres
+UPDATE categorias SET orden = 7  WHERE id_categoria = 'e9ea600b-197a-5df3-91d9-2f3c03963c4e'; -- Tacos
+UPDATE categorias SET orden = 14 WHERE id_categoria = '5b391907-4b26-598e-b478-43859363d0a9'; -- Bebidas
+
+INSERT INTO categorias (id_categoria, nombre, descripcion, activa, orden) VALUES
+  ('c0000000-0000-4000-8000-000000000002', 'Enchiladas',            'Enchiladas',                    true, 2),
+  ('c0000000-0000-4000-8000-000000000003', 'Alitas',                'Alitas de pollo',               true, 3),
+  ('c0000000-0000-4000-8000-000000000006', 'Perros mexicanos',      'Perros calientes estilo Danny', true, 6),
+  ('c0000000-0000-4000-8000-000000000008', 'Quesadillas',           'Quesadillas',                   true, 8),
+  ('c0000000-0000-4000-8000-000000000009', 'Combos',                'Combos',                        true, 9),
+  ('c0000000-0000-4000-8000-000000000010', 'Especiales de la casa', 'Especiales de la casa',         true, 10),
+  ('c0000000-0000-4000-8000-000000000011', 'Burritos',              'Burritos',                      true, 11),
+  ('c0000000-0000-4000-8000-000000000012', 'Hamburguesas',          'Hamburguesas',                  true, 12),
+  ('c0000000-0000-4000-8000-000000000013', 'Adiciones',             'Adiciones para tu pedido',      true, 13)
+ON CONFLICT (id_categoria) DO UPDATE SET nombre = EXCLUDED.nombre, orden = EXCLUDED.orden;
+
+UPDATE productos SET id_categoria = 'c0000000-0000-4000-8000-000000000002' WHERE nombre = 'Enchiladas Verdes';
+UPDATE productos SET id_categoria = 'c0000000-0000-4000-8000-000000000003' WHERE nombre IN ('Alitas Danny x8', 'Alitas Danny x16');
+UPDATE productos SET id_categoria = 'c0000000-0000-4000-8000-000000000006' WHERE nombre = 'Perro Caliente';
+UPDATE productos SET id_categoria = 'c0000000-0000-4000-8000-000000000012' WHERE nombre = 'Hamburguesa';

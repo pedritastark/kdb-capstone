@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Badge, Box, Button, Dialog, Field, Flex, Input, NativeSelect, Portal, Switch, Text, Textarea, VStack } from "@chakra-ui/react";
-import { FiX } from "react-icons/fi";
+import { FiEdit2, FiX } from "react-icons/fi";
+import { resolveImageUrl } from "../../lib/images";
 import type { Ingrediente, TipoMovimientoInventario } from "../../types";
 import { useInventario } from "../../hooks/useInventario";
 import { TIPO_MOVIMIENTO_COLOR, TIPO_MOVIMIENTO_LABEL } from "../../utils/constants";
@@ -9,11 +10,13 @@ import { formatoFechaHora } from "../../utils/format";
 interface IngredienteDetailModalProps {
   ingrediente: Ingrediente | null;
   onClose: () => void;
+  /** Abre el formulario para editar nombre, unidad, mínimo y foto. */
+  onEditar: (ingrediente: Ingrediente) => void;
 }
 
 const TIPOS: TipoMovimientoInventario[] = ["entrada", "consumo", "perdida", "ajuste", "devolucion"];
 
-export function IngredienteDetailModal({ ingrediente, onClose }: IngredienteDetailModalProps) {
+export function IngredienteDetailModal({ ingrediente, onClose, onEditar }: IngredienteDetailModalProps) {
   const { movimientosDe, registrarMovimiento, toggleDisponible, ingredientes } = useInventario();
   const [tipo, setTipo] = useState<TipoMovimientoInventario>("entrada");
   const [cantidad, setCantidad] = useState(0);
@@ -39,7 +42,17 @@ export function IngredienteDetailModal({ ingrediente, onClose }: IngredienteDeta
         <Dialog.Positioner>
           <Dialog.Content bg="bg.surface" border="1px solid" borderColor="border.subtle" borderRadius="card">
             <Dialog.Header borderBottom="1px solid" borderColor="border.subtle">
-              <Dialog.Title>{actual.nombre}</Dialog.Title>
+              <Flex align="center" gap={3} pr={10}>
+                {resolveImageUrl(actual.imagen_url) && (
+                  <Box w="40px" h="40px" borderRadius="8px" overflow="hidden" flexShrink={0} bg="bg.inset">
+                    <img src={resolveImageUrl(actual.imagen_url)!} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                  </Box>
+                )}
+                <Dialog.Title>{actual.nombre}</Dialog.Title>
+                <Button size="xs" variant="outline" borderColor="border.subtle" ml="auto" onClick={() => onEditar(actual)}>
+                  <FiEdit2 /> Editar / foto
+                </Button>
+              </Flex>
               <Dialog.CloseTrigger asChild>
                 <Button variant="ghost" size="sm" position="absolute" top={3} right={3} color="text.secondary">
                   <FiX />

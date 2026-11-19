@@ -3,7 +3,7 @@ import { FiArrowLeft, FiMinus, FiPlus } from "react-icons/fi";
 import type { Categoria, Producto } from "../../types";
 import { resolveImageUrl } from "../../lib/images";
 import { formatoMoneda } from "../../utils/format";
-import { estiloCategoria } from "./shared";
+import { estiloCategoria, fotoDeCategoria } from "./shared";
 
 interface ProductosViewProps {
   categorias: Categoria[];
@@ -46,7 +46,7 @@ export function ProductosView({
         {categorias.map((c, i) => {
           const activa = c.id_categoria === categoriaId;
           const estilo = estiloCategoria(c.nombre, i);
-          const imagen = resolveImageUrl(estilo.imagen);
+          const imagen = resolveImageUrl(fotoDeCategoria(estilo, c.id_categoria, productos));
           return (
             <Flex
               key={c.id_categoria}

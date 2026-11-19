@@ -31,6 +31,7 @@ export interface Categoria {
   nombre: string;
   descripcion: string;
   activa: boolean;
+  orden?: number;
 }
 
 export interface Producto {
