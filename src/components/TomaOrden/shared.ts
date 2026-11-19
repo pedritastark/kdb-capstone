@@ -22,12 +22,18 @@ export interface EstiloCategoria {
 // Las que no tienen foto fija usan la de su primer producto con foto (ver
 // fotoDeCategoria); si ninguno tiene, el degradado con el emoji.
 const ESTILOS_POR_NOMBRE: Record<string, EstiloCategoria> = {
-  "Platos mexicanos": {
+  Antojitos: {
     emoji: "🥑",
     ocultarInsignia: true,
     imagen: "/images/platos/guacamole.png",
     color: "pink.500",
     gradiente: "linear-gradient(135deg, #be185d, #9d174d)",
+  },
+  "Platos mexicanos": {
+    emoji: "🇲🇽",
+    imagen: null,
+    color: "accent.500",
+    gradiente: "linear-gradient(135deg, #c2410c, #9a3412)",
   },
   Enchiladas: {
     emoji: "🫔",

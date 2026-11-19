@@ -449,11 +449,12 @@ ON CONFLICT DO NOTHING;
 -- ── Categorías del menú (nov 2026) ────────────────────────────────────────
 -- Reorganiza el menú en las categorías que usa el local. Idempotente (ids fijos,
 -- ON CONFLICT / UPDATE): se puede correr de nuevo sin duplicar nada.
---   * "Antojitos para Compartir" -> "Platos mexicanos" (conserva sus productos)
+--   * "Antojitos para Compartir" -> "Antojitos" (conserva sus productos)
+--   * "Platos mexicanos" es una categoría nueva
 --   * "Platos Fuertes"           -> "Plato fuerte"
 --   * Bebidas se conserva, al final.
 --   * Alitas, enchiladas, perros y hamburguesas pasan a su propia categoría.
-UPDATE categorias SET nombre = 'Platos mexicanos', descripcion = 'Antojitos y platos mexicanos para compartir', orden = 1
+UPDATE categorias SET nombre = 'Antojitos', descripcion = 'Antojitos para compartir', orden = 0
   WHERE id_categoria = '6280f3ec-852b-58db-adc2-688cbfab895c';
 UPDATE categorias SET nombre = 'Plato fuerte', descripcion = 'Platos principales de mayor tamaño', orden = 4
   WHERE id_categoria = 'f8ef7307-7ed5-574c-8951-fb49e596d056';
@@ -462,6 +463,7 @@ UPDATE categorias SET orden = 7  WHERE id_categoria = 'e9ea600b-197a-5df3-91d9-2
 UPDATE categorias SET orden = 14 WHERE id_categoria = '5b391907-4b26-598e-b478-43859363d0a9'; -- Bebidas
 
 INSERT INTO categorias (id_categoria, nombre, descripcion, activa, orden) VALUES
+  ('c0000000-0000-4000-8000-000000000001', 'Platos mexicanos',      'Platos mexicanos',              true, 1),
   ('c0000000-0000-4000-8000-000000000002', 'Enchiladas',            'Enchiladas',                    true, 2),
   ('c0000000-0000-4000-8000-000000000003', 'Alitas',                'Alitas de pollo',               true, 3),
   ('c0000000-0000-4000-8000-000000000006', 'Perros mexicanos',      'Perros calientes estilo Danny', true, 6),

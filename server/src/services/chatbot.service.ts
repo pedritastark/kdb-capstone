@@ -135,7 +135,8 @@ function emojiCategoria(nombre: string): string {
   if (n.includes("bebida")) return "🥤";
   if (n.includes("postre")) return "🍰";
   if (n.includes("adicion") || n.includes("adicional")) return "🍟";
-  if (n.includes("mexican") || n.includes("antojito")) return "🥑";
+  if (n.includes("antojito")) return "🥑";
+  if (n.includes("mexican")) return "🇲🇽";
   if (n.includes("plato")) return "🍽️";
   return "🍴";
 }
