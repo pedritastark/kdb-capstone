@@ -45,7 +45,45 @@ export function PagosPage() {
         ))}
       </Flex>
 
-      <Box bg="bg.surface" borderRadius="card" border="1px solid" borderColor="border.subtle" overflow="hidden">
+      {/* Celular: tarjetas con los botones siempre a la vista (la tabla se cortaba y no dejaba llegar a Confirmar/Rechazar). */}
+      <Flex direction="column" gap={3} display={{ base: "flex", md: "none" }}>
+        {filtrados.map((pago) => {
+          const pedido = pedidos.find((p) => p.id_pedido === pago.id_pedido);
+          const cliente = pedido ? clientes.find((c) => c.id_cliente === pedido.id_cliente) : undefined;
+          const accionable = pago.estado === "pendiente" || pago.estado === "reportado";
+          return (
+            <Box key={pago.id_pago} bg="bg.surface" border="1px solid" borderColor="border.subtle" borderRadius="card" p={4}>
+              <Flex justify="space-between" align="center" mb={2} gap={2}>
+                <Text fontWeight="700">#{pedido?.codigo ?? "—"} · {cliente?.nombre ?? "—"}</Text>
+                <Badge bg={ESTADO_PAGO_COLOR[pago.estado]} color="white" fontSize="10px">
+                  {ESTADO_PAGO_LABEL[pago.estado]}
+                </Badge>
+              </Flex>
+              <Flex justify="space-between" align="center" mb={1}>
+                <Badge bg={MEDIO_PAGO_COLOR[pago.medio]} color="white" fontSize="10px">
+                  {MEDIO_PAGO_LABEL[pago.medio]}
+                </Badge>
+                <Text fontWeight="800" color="success.500">{formatoMoneda(pago.valor)}</Text>
+              </Flex>
+              {pago.referencia && (
+                <Text fontSize="xs" color="text.tertiary" wordBreak="break-all">Ref: {pago.referencia}</Text>
+              )}
+              {accionable && (
+                <Flex gap={2} mt={3}>
+                  <Button flex="1" size="sm" bg="success.500" color="white" _hover={{ bg: "success.600" }} onClick={() => cambiarEstado(pago.id_pago, "confirmado")}>
+                    Confirmar
+                  </Button>
+                  <Button flex="1" size="sm" variant="outline" borderColor="danger.500" color="danger.500" onClick={() => cambiarEstado(pago.id_pago, "rechazado")}>
+                    Rechazar
+                  </Button>
+                </Flex>
+              )}
+            </Box>
+          );
+        })}
+      </Flex>
+
+      <Box display={{ base: "none", md: "block" }} bg="bg.surface" borderRadius="card" border="1px solid" borderColor="border.subtle" overflowX="auto">
         <Table.Root size="sm">
           <Table.Header>
             <Table.Row bg="bg.inset">
