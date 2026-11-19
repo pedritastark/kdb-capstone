@@ -16,12 +16,22 @@ export type MedioPago = "efectivo" | "nequi" | "daviplata" | "llave";
 
 // Costo fijo del domicilio (recoger en el local no se cobra). Configurable con
 // la variable de entorno COSTO_DOMICILIO; por defecto $5.000.
-export const COSTO_DOMICILIO_FIJO = (() => {
-  const n = Number(process.env.COSTO_DOMICILIO);
-  return process.env.COSTO_DOMICILIO !== undefined && process.env.COSTO_DOMICILIO !== "" && Number.isFinite(n) && n >= 0
-    ? Math.round(n)
-    : 5000;
-})();
+const precioDeEnv = (nombre: string, porDefecto: number) => {
+  const crudo = process.env[nombre];
+  const n = Number(crudo);
+  return crudo !== undefined && crudo !== "" && Number.isFinite(n) && n >= 0 ? Math.round(n) : porDefecto;
+};
+export const COSTO_DOMICILIO_FIJO = precioDeEnv("COSTO_DOMICILIO", 5000);
+
+// Desechable por unidad (solo pedidos a domicilio). Cada plato declara cuál lleva
+// en productos.desechable (null = ninguno, p. ej. bebidas).
+export type Desechable = "pequeno" | "grande";
+export const PRECIO_DESECHABLE: Record<Desechable, number> = {
+  pequeno: precioDeEnv("DESECHABLE_PEQUENO", 500),
+  grande: precioDeEnv("DESECHABLE_GRANDE", 1000),
+};
+export const costoDesechables = (lineas: { desechable: Desechable | null; cantidad: number }[]) =>
+  lineas.reduce((s, l) => s + (l.desechable ? PRECIO_DESECHABLE[l.desechable] * l.cantidad : 0), 0);
 
 /**
  * Misma máquina de estados que siguienteEstado() en src/hooks/usePedidos.tsx
@@ -132,6 +142,7 @@ export async function crearPedido(
     precio_unitario: number;
     subtotal: number;
     observaciones: string;
+    desechable: Desechable | null;
     opciones: { id_opcion: string; nombre_opcion: string; precio_adicional: number }[];
   }[] = [];
 
@@ -141,8 +152,9 @@ export async function crearPedido(
       precio: string;
       activo: boolean;
       disponible: boolean;
+      desechable: Desechable | null;
     }>(
-      `SELECT nombre, precio, activo, disponible FROM productos WHERE id_producto = $1`,
+      `SELECT nombre, precio, activo, disponible, desechable FROM productos WHERE id_producto = $1`,
       [item.id_producto],
     );
     const producto = rows[0];
@@ -179,20 +191,22 @@ export async function crearPedido(
       precio_unitario,
       subtotal: precioConAdicionales * item.cantidad,
       observaciones: item.observaciones ?? "",
+      desechable: producto.desechable,
       opciones,
     });
   }
 
   const subtotal = detalles.reduce((s, d) => s + d.subtotal, 0);
   const costo_domicilio = input.tipo_entrega === "domicilio" ? COSTO_DOMICILIO_FIJO : 0;
-  const total = subtotal + costo_domicilio;
+  const costo_desechables = input.tipo_entrega === "domicilio" ? costoDesechables(detalles) : 0;
+  const total = subtotal + costo_domicilio + costo_desechables;
   const codigo = generarCodigo();
 
   const { rows: pedidoRows } = await client.query(
     `INSERT INTO pedidos
        (id_cliente, id_direccion, id_usuario, codigo, tipo_entrega, numero_mesa, estado,
-        subtotal, costo_domicilio, total, tiempo_estimado_min, observaciones)
-     VALUES ($1, $2, $3, $4, $5, $6, 'recibido', $7, $8, $9, $10, $11)
+        subtotal, costo_domicilio, costo_desechables, total, tiempo_estimado_min, observaciones)
+     VALUES ($1, $2, $3, $4, $5, $6, 'recibido', $7, $8, $9, $10, $11, $12)
      RETURNING *`,
     [
       id_cliente,
@@ -203,6 +217,7 @@ export async function crearPedido(
       input.numero_mesa ?? null,
       subtotal,
       costo_domicilio,
+      costo_desechables,
       total,
       20,
       input.observaciones ?? "",

@@ -1,5 +1,5 @@
 import type { OpcionProducto, Producto } from "../types";
-import { COSTO_DOMICILIO } from "../config/negocio";
+import { COSTO_DOMICILIO, PRECIO_DESECHABLE } from "../config/negocio";
 import { formatoMoneda } from "../utils/format";
 
 /** Una línea del carrito de la landing: producto + personalización + cantidad. */
@@ -9,6 +9,8 @@ export interface LineaCarrito {
   nombre: string;
   precio: number;
   imagen_url: string;
+  /** recipiente del plato (se cobra por unidad solo en domicilio) */
+  desechable?: "pequeno" | "grande" | null;
   cantidad: number;
   /** nombres de ingredientes que el cliente NO quiere */
   excluidos: string[];
@@ -37,6 +39,7 @@ export function nuevaLinea(producto: Producto, p: Personalizacion, cantidad: num
     nombre: producto.nombre,
     precio: producto.precio,
     imagen_url: producto.imagen_url,
+    desechable: producto.desechable ?? null,
     cantidad,
     excluidos: p.excluidos,
     adicionales,
@@ -46,6 +49,9 @@ export function nuevaLinea(producto: Producto, p: Personalizacion, cantidad: num
 export const precioUnitario = (l: LineaCarrito) => l.precio + l.adicionales.reduce((s, a) => s + a.precio_adicional, 0);
 export const totalLinea = (l: LineaCarrito) => precioUnitario(l) * l.cantidad;
 export const totalCarrito = (c: LineaCarrito[]) => c.reduce((s, l) => s + totalLinea(l), 0);
+/** Desechables si el pedido es a domicilio (por unidad de cada plato). */
+export const desechablesCarrito = (c: LineaCarrito[]) =>
+  c.reduce((s, l) => s + (l.desechable ? PRECIO_DESECHABLE[l.desechable] * l.cantidad : 0), 0);
 export const cantidadCarrito = (c: LineaCarrito[]) => c.reduce((s, l) => s + l.cantidad, 0);
 
 /** "Sin cebolla · + Aguacate" (vacío si no hay personalización). */
@@ -112,7 +118,7 @@ export function mensajeWhatsApp(c: LineaCarrito[]): string {
     ...lineas,
     "",
     `Subtotal: ${formatoMoneda(totalCarrito(c))}`,
-    `Domicilio: ${formatoMoneda(COSTO_DOMICILIO)} (sin costo si recoges en el local)`,
+    `Si es a domicilio: +${formatoMoneda(COSTO_DOMICILIO)} de domicilio y +${formatoMoneda(desechablesCarrito(c))} de desechables (sin costo si recoges en el local)`,
     "",
     "Mis datos te los paso a continuación.",
   ].join("\n");

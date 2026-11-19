@@ -45,6 +45,8 @@ export interface Producto {
   fecha_creacion: string;
   activo: boolean;
   imagen_url: string;
+  /** Recipiente que lleva el plato (se cobra por unidad solo en domicilio); null = ninguno. */
+  desechable?: "pequeno" | "grande" | null;
   /** Cuántos ingredientes tiene su receta (0 = plato sin receta). Lo trae GET /productos. */
   n_ingredientes?: number;
 }
@@ -82,6 +84,7 @@ export interface Pedido {
   estado: EstadoPedido;
   subtotal: number;
   costo_domicilio: number;
+  costo_desechables?: number;
   total: number;
   tiempo_estimado_min: number;
   observaciones: string;

@@ -36,6 +36,7 @@ const productoSchema = z.object({
   tiempo_preparacion_min: z.number().int().nonnegative().optional().default(10),
   activo: z.boolean().optional().default(true),
   imagen_url: z.string().optional().default(""),
+  desechable: z.enum(["pequeno", "grande"]).nullable().optional().default(null),
 });
 
 productosRouter.post(
@@ -44,9 +45,9 @@ productosRouter.post(
   asyncHandler(async (req, res) => {
     const d = productoSchema.parse(req.body);
     const { rows } = await pool.query(
-      `INSERT INTO productos (id_categoria, nombre, descripcion, precio, disponible, tiempo_preparacion_min, activo, imagen_url)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *`,
-      [d.id_categoria, d.nombre, d.descripcion, d.precio, d.disponible, d.tiempo_preparacion_min, d.activo, d.imagen_url],
+      `INSERT INTO productos (id_categoria, nombre, descripcion, precio, disponible, tiempo_preparacion_min, activo, imagen_url, desechable)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING *`,
+      [d.id_categoria, d.nombre, d.descripcion, d.precio, d.disponible, d.tiempo_preparacion_min, d.activo, d.imagen_url, d.desechable],
     );
     res.status(201).json(rows[0]);
   }),
@@ -59,9 +60,9 @@ productosRouter.put(
     const d = productoSchema.parse(req.body);
     const { rows } = await pool.query(
       `UPDATE productos SET id_categoria=$1, nombre=$2, descripcion=$3, precio=$4, disponible=$5,
-         tiempo_preparacion_min=$6, activo=$7, imagen_url=$8
-       WHERE id_producto=$9 RETURNING *`,
-      [d.id_categoria, d.nombre, d.descripcion, d.precio, d.disponible, d.tiempo_preparacion_min, d.activo, d.imagen_url, req.params.id],
+         tiempo_preparacion_min=$6, activo=$7, imagen_url=$8, desechable=$9
+       WHERE id_producto=$10 RETURNING *`,
+      [d.id_categoria, d.nombre, d.descripcion, d.precio, d.disponible, d.tiempo_preparacion_min, d.activo, d.imagen_url, d.desechable, req.params.id],
     );
     if (!rows[0]) throw new ApiError(404, "Producto no encontrado");
     res.json(rows[0]);

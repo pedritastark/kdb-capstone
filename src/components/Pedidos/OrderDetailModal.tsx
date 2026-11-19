@@ -144,6 +144,12 @@ export function OrderDetailModal({ pedido, onClose }: OrderDetailModalProps) {
                       <Text>{formatoMoneda(pedido.costo_domicilio)}</Text>
                     </Flex>
                   )}
+                  {(pedido.costo_desechables ?? 0) > 0 && (
+                    <Flex justify="space-between" fontSize="sm" color="text.secondary" mb={1}>
+                      <Text>Desechables</Text>
+                      <Text>{formatoMoneda(pedido.costo_desechables ?? 0)}</Text>
+                    </Flex>
+                  )}
                   <Flex justify="space-between" fontWeight="800" fontSize="lg" pt={1}>
                     <Text>Total</Text>
                     <Text color="success.500">{formatoMoneda(pedido.total)}</Text>

@@ -23,6 +23,16 @@ export const COSTO_DOMICILIO = (() => {
   return leer(env.VITE_COSTO_DOMICILIO) !== "" && Number.isFinite(n) && n >= 0 ? Math.round(n) : 5000;
 })();
 
+/** Desechable por unidad en domicilio. Deben coincidir con DESECHABLE_PEQUENO / DESECHABLE_GRANDE de la API. */
+const precioEnv = (v: unknown, porDefecto: number) => {
+  const n = Number(leer(v));
+  return leer(v) !== "" && Number.isFinite(n) && n >= 0 ? Math.round(n) : porDefecto;
+};
+export const PRECIO_DESECHABLE = {
+  pequeno: precioEnv(env.VITE_DESECHABLE_PEQUENO, 500),
+  grande: precioEnv(env.VITE_DESECHABLE_GRANDE, 1000),
+};
+
 export const soloDigitos = (s: string) => s.replace(/[^\d+]/g, "");
 
 export const urlMapaEmbed = (direccion: string) =>

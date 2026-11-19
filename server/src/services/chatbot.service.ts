@@ -2,7 +2,7 @@ import { z } from "zod";
 import { pool, withTransaction } from "../db";
 import { ApiError } from "../middleware/errorHandler";
 import { crearNotificacion } from "./notificaciones.service";
-import { COSTO_DOMICILIO_FIJO, crearPedido, type MedioPago } from "./pedidos.service";
+import { COSTO_DOMICILIO_FIJO, costoDesechables, crearPedido, type Desechable, type MedioPago } from "./pedidos.service";
 
 /**
  * Chatbot de toma de pedidos (domicilio y recogida).
@@ -243,7 +243,7 @@ async function preguntar(e: Estado, prefijo: string[] = []): Promise<Respuesta> 
     case "entrega":
       return con(
         resp(e, ["¿Cómo quieres recibir tu pedido?"], [
-          { valor: "1", etiqueta: `A domicilio 🛵 (+${moneda(COSTO_DOMICILIO_FIJO)})` },
+          { valor: "1", etiqueta: `A domicilio 🛵 (+${moneda(COSTO_DOMICILIO_FIJO)} + desechables)` },
           { valor: "2", etiqueta: "Pasar a recogerlo 🏪" },
         ]),
       );
@@ -440,7 +440,7 @@ async function preguntar(e: Estado, prefijo: string[] = []): Promise<Respuesta> 
       );
 
     case "resumen":
-      return con(resp(e, [resumenTexto(e), "¿Confirmas tu pedido?"], [
+      return con(resp(e, [await resumenTexto(e), "¿Confirmas tu pedido?"], [
         { valor: "1", etiqueta: "Sí, confirmar ✅" },
         { valor: "2", etiqueta: "No, quiero modificarlo ✏️" },
       ]));
@@ -450,11 +450,23 @@ async function preguntar(e: Estado, prefijo: string[] = []): Promise<Respuesta> 
   }
 }
 
-function resumenTexto(e: Estado): string {
+/** Desechables del carrito (se releen de la base: el estado del cliente no es de fiar). */
+async function desechablesDeCarrito(e: Estado): Promise<number> {
+  if (e.tipo !== "domicilio" || e.carrito.length === 0) return 0;
+  const { rows } = await pool.query<{ id_producto: string; desechable: Desechable | null }>(
+    `SELECT id_producto, desechable FROM productos WHERE id_producto = ANY($1::uuid[])`,
+    [e.carrito.map((l) => l.id_producto)],
+  );
+  const porId = new Map(rows.map((r) => [r.id_producto, r.desechable]));
+  return costoDesechables(e.carrito.map((l) => ({ desechable: porId.get(l.id_producto) ?? null, cantidad: l.cantidad })));
+}
+
+async function resumenTexto(e: Estado): Promise<string> {
+  const desechables = await desechablesDeCarrito(e);
   const lineas = e.carrito.map((l) => `${descripcionLinea(l)} — ${moneda(totalLinea(l))}`);
   const entrega =
     e.tipo === "domicilio"
-      ? `🛵 Domicilio a: ${e.direccion}${e.referencia ? ` (${e.referencia})` : ""}\nCosto de domicilio: ${moneda(COSTO_DOMICILIO_FIJO)}`
+      ? `🛵 Domicilio a: ${e.direccion}${e.referencia ? ` (${e.referencia})` : ""}\nCosto de domicilio: ${moneda(COSTO_DOMICILIO_FIJO)}\nDesechables: ${moneda(desechables)}`
       : `🏪 Recoges en: ${LOCAL_DIRECCION()}`;
   return [
     "🧾 Resumen de tu pedido",
@@ -463,7 +475,7 @@ function resumenTexto(e: Estado): string {
     "",
     entrega,
     `💳 Pago: ${MEDIO_LABEL[e.medio!]}`,
-    `Total: ${moneda(totalCarrito(e) + (e.tipo === "domicilio" ? COSTO_DOMICILIO_FIJO : 0))}`,
+    `Total: ${moneda(totalCarrito(e) + (e.tipo === "domicilio" ? COSTO_DOMICILIO_FIJO + desechables : 0))}`,
   ].join("\n");
 }
 
@@ -554,7 +566,7 @@ async function confirmarPedido(e: Estado): Promise<Respuesta> {
     const fin: Estado = { ...reiniciar(e), paso: "fin" };
     const entrega =
       e.tipo === "domicilio"
-        ? `Te lo llevamos a ${e.direccion}. El domicilio cuesta ${moneda(COSTO_DOMICILIO_FIJO)} 🛵`
+        ? `Te lo llevamos a ${e.direccion}. El domicilio cuesta ${moneda(COSTO_DOMICILIO_FIJO)} (más desechables) 🛵`
         : `Te esperamos en ${LOCAL_DIRECCION()} 🏪`;
     const r = await preguntar(fin, [
       `🎉 ¡Pedido confirmado!\nTu número de pedido es #${pedido.codigo}\nTotal: ${moneda(pedido.total)} — pagas con ${MEDIO_LABEL[e.medio!]}\n${entrega}\nTiempo estimado: ~${pedido.tiempo_estimado_min ?? 20} min.`,
@@ -669,7 +681,7 @@ async function manejar(e: Estado, texto: string): Promise<Respuesta> {
       const ref = texto.trim();
       const sinRef = /^(no|ninguna|nada|-)$/i.test(ref);
       return listoParaCatalogo({ ...e, referencia: sinRef ? undefined : ref.slice(0, 200) }, [
-        `¡Anotado! Lo enviamos a esa dirección 🛵 (domicilio: ${moneda(COSTO_DOMICILIO_FIJO)})`,
+        `¡Anotado! Lo enviamos a esa dirección 🛵 (domicilio: ${moneda(COSTO_DOMICILIO_FIJO)} + desechables)`,
       ]);
     }
 

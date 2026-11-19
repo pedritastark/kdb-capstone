@@ -1,7 +1,7 @@
 import { Box, Button, Drawer, Flex, Portal, Text } from "@chakra-ui/react";
 import { FaWhatsapp } from "react-icons/fa";
 import { FiMinus, FiPlus, FiTrash2, FiX } from "react-icons/fi";
-import { detalleLinea, totalLinea, type LineaCarrito } from "../../lib/carrito";
+import { desechablesCarrito, detalleLinea, totalLinea, type LineaCarrito } from "../../lib/carrito";
 import { COSTO_DOMICILIO } from "../../config/negocio";
 import { formatoMoneda } from "../../utils/format";
 
@@ -145,7 +145,8 @@ export function CarritoDrawer({
                   </Text>
                 </Flex>
                 <Text color="text.secondary" fontSize="xs" mt={-1}>
-                  + Domicilio {formatoMoneda(COSTO_DOMICILIO)} (sin costo si recoges en el local)
+                  Si es a domicilio: + {formatoMoneda(COSTO_DOMICILIO)} de domicilio
+                  {desechablesCarrito(lineas) > 0 && ` + ${formatoMoneda(desechablesCarrito(lineas))} de desechables`}. Recoger en el local no tiene costo.
                 </Text>
                 <Button
                   w="full"

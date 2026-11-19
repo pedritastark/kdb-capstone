@@ -18,6 +18,7 @@ import type { Producto, TipoOpcion } from "../../types";
 import { useProductos } from "../../hooks/useProductos";
 import { FotoPicker } from "../Shared/FotoPicker";
 import { formatoMoneda } from "../../utils/format";
+import { PRECIO_DESECHABLE } from "../../config/negocio";
 
 interface ProductoFormModalProps {
   producto: Producto | null;
@@ -42,6 +43,7 @@ const vacio = {
   tiempo_preparacion_min: 5,
   activo: true,
   imagen_url: "",
+  desechable: "grande" as "pequeno" | "grande" | "",
 };
 
 export function ProductoFormModal({ producto, abierto, onClose }: ProductoFormModalProps) {
@@ -64,6 +66,7 @@ export function ProductoFormModal({ producto, abierto, onClose }: ProductoFormMo
         tiempo_preparacion_min: producto.tiempo_preparacion_min,
         activo: producto.activo,
         imagen_url: producto.imagen_url,
+        desechable: producto.desechable ?? "",
       });
     } else {
       // Producto nuevo: arranca en la primera categoría real (antes quedaba un id
@@ -83,9 +86,9 @@ export function ProductoFormModal({ producto, abierto, onClose }: ProductoFormMo
     setGuardando(true);
     try {
       if (producto) {
-        await guardarProducto({ ...producto, ...form, nombre: form.nombre.trim() });
+        await guardarProducto({ ...producto, ...form, desechable: form.desechable || null, nombre: form.nombre.trim() });
       } else {
-        await crearProducto({ ...form, nombre: form.nombre.trim() });
+        await crearProducto({ ...form, desechable: form.desechable || null, nombre: form.nombre.trim() });
       }
       onClose(); // solo se cierra si la API lo guardó
     } catch (err) {
@@ -199,6 +202,21 @@ export function ProductoFormModal({ producto, abierto, onClose }: ProductoFormMo
                     borderColor="border.subtle"
                     maxW="160px"
                   />
+                </Field.Root>
+
+                <Field.Root>
+                  <Field.Label fontSize="sm" color="text.secondary">Desechable (se cobra por unidad en domicilio)</Field.Label>
+                  <NativeSelect.Root bg="bg.inset" maxW="260px">
+                    <NativeSelect.Field
+                      value={form.desechable}
+                      onChange={(e) => setForm((f) => ({ ...f, desechable: e.target.value as "pequeno" | "grande" | "" }))}
+                    >
+                      <option value="">Sin desechable</option>
+                      <option value="pequeno">Pequeño ({formatoMoneda(PRECIO_DESECHABLE.pequeno)})</option>
+                      <option value="grande">Grande ({formatoMoneda(PRECIO_DESECHABLE.grande)})</option>
+                    </NativeSelect.Field>
+                    <NativeSelect.Indicator />
+                  </NativeSelect.Root>
                 </Field.Root>
 
                 <Flex gap={6}>
